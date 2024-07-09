@@ -1,10 +1,13 @@
 import socket
 
+
 class URL:
-    
+
     def __init__(self, url):
         self.scheme, url = url.split("://", 1)
         assert self.scheme == "http"
+        if "/" not in url:
+            url += "/"
         self.host, url = url.split("/", 1)
         self.path = "/" + url
 
@@ -15,7 +18,7 @@ class URL:
             proto=socket.IPPROTO_TCP
         )
         s.connect((self.host, 80))
-        
+
         request = self._build_request()
         s.send(request.encode("utf8"))
         response = s.makefile("r", encoding="utf8", newline="\r\n")
@@ -26,7 +29,7 @@ class URL:
         request += f"Host: {self.host}\r\n"
         request += "\r\n"
         return request
-    
+
     def _parse_response(self, response):
         version, status, explanation = self._parse_statusline(response)
         headers = self._parse_headers(response)
@@ -36,7 +39,7 @@ class URL:
     def _parse_statusline(self, response):
         statusline = response.readline()
         return statusline.split(" ", 2)
-    
+
     def _parse_headers(self, response):
         response_headers = {}
 
@@ -45,8 +48,7 @@ class URL:
             if line == "\r\n": break
             header, value = line.split(":", 1)
             response_headers[header.casefold()] = value.strip()
-        
+
         assert "transfer-encoding" not in response_headers
         assert "content-encoding" not in response_headers
         return response_headers
-

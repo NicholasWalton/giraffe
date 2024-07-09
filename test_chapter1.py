@@ -1,7 +1,9 @@
+import pytest
+
 from chapter1 import URL
 from io import StringIO
 
-YIKES = """HTTP/1.0 200 OK
+SAMPLE_HTTP_RESPONSE = """HTTP/1.0 200 OK
 Accept-Ranges: bytes
 Age: 422085
 Cache-Control: max-age=604800
@@ -22,35 +24,45 @@ Connection: close
 """
 
 
-def test_url_of_exampleorg():
+def test_host():
     url = URL("http://example.org/")
     assert url.host == "example.org"
 
-# def test_url_of_exampleorg_no_slash():
-#     url = URL("http://example.org")
-#     assert url.host == "example.org"
-    
-def test_url_with_path():
+
+def test_host_no_slash():
+    url = URL("http://example.org")
+    assert url.host == "example.org"
+
+
+def test_url_path():
     url = URL("http://example.org/my/path")
     assert url.path == "/my/path"
-    
+
+
 def test_build_request():
     url = URL("http://example.org/index.html/")
     assert url._build_request() == "GET /index.html/ HTTP/1.0\r\nHost: example.org\r\n\r\n"
-    
-def test_parse_statusline():
-    url = URL("http://example.org/index.html/")
-    test_response = StringIO(YIKES, newline="\r\n")
-    version, status, explanation = url._parse_statusline(test_response)
+
+
+@pytest.fixture()
+def example_url():
+    return URL("http://example.org/index.html")
+
+
+@pytest.fixture
+def fake_response():
+    return StringIO(SAMPLE_HTTP_RESPONSE, newline="\r\n")
+
+
+def test_parse_statusline(example_url, fake_response):
+    version, status, explanation = example_url._parse_statusline(fake_response)
     assert version == "HTTP/1.0"
     assert status == "200"
     assert explanation == "OK\r\n"
 
-def test_parse_headers():
-    url = URL("http://example.org/index.html/")
-    test_response = StringIO(YIKES, newline="\r\n")
-    test_response.readline()
-    headers = url._parse_headers(test_response)
-    
-    assert headers["content-type"] == "text/html; charset=UTF-8"
 
+def test_parse_headers(example_url, fake_response):
+    fake_response.readline()  # skip status line
+    headers = example_url._parse_headers(fake_response)
+
+    assert headers["content-type"] == "text/html; charset=UTF-8"
