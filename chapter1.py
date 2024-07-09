@@ -22,7 +22,9 @@ class URL:
         request = self._build_request()
         s.send(request.encode("utf8"))
         response = s.makefile("r", encoding="utf8", newline="\r\n")
-        version, status, explanation = self._parse_response(response)
+        content = self._parse_response(response)
+        s.close()
+        return content
 
     def _build_request(self):
         request = f"GET {self.path} HTTP/1.0\r\n"
@@ -33,9 +35,9 @@ class URL:
     def _parse_response(self, response):
         version, status, explanation = self._parse_statusline(response)
         headers = self._parse_headers(response)
+        content = response.read()
+        return content
 
-        return version, status, explanation
-        
     def _parse_statusline(self, response):
         statusline = response.readline()
         return statusline.split(" ", 2)

@@ -66,3 +66,7 @@ def test_parse_headers(example_url, fake_response):
     headers = example_url._parse_headers(fake_response)
 
     assert headers["content-type"] == "text/html; charset=UTF-8"
+
+
+def test_parse_response(example_url, fake_response):
+    assert example_url._parse_response(fake_response) == "<!doctype html>\r\n<html>\r\n</html>\r\n"
