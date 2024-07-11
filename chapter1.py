@@ -53,9 +53,25 @@ class URL:
         assert "content-encoding" not in response_headers
         return response_headers
 
+    def show(self, body):
+        in_tag = False
+        rendered = []
+        for c in body:
+            if c == "<":
+                in_tag = True
+            elif c == ">":
+                in_tag = False
+            elif not in_tag:
+                rendered.append(c)
+        return ''.join(rendered)
+
+    def load(self):
+        body = self.request()
+        return self.show(body)
+
 
 def main():
-    print(URL("http://example.org").request())
+    print(URL("http://example.org").load())
 
 
 if __name__ == '__main__':
