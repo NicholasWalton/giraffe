@@ -83,7 +83,7 @@ class URL:
 def main():
     import sys
 
-    print(URL("http://example.com" if len(sys.argv) <= 1 else sys.argv[1]).load())
+    print(URL("https://browser.engineering/examples/example1-simple.html" if len(sys.argv) <= 1 else sys.argv[1]).load())
 
 
 if __name__ == "__main__":

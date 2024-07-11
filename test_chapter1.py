@@ -33,8 +33,13 @@ def test_url_path():
 
 def test_build_request():
     url = URL("http://example.org/index.html/")
+    expected_request = '\r\n'.join((
+        "GET /index.html/ HTTP/1.0",
+        "Host: example.org",
+        "\r\n",
+    ))
     assert (
-            url._build_request() == "GET /index.html/ HTTP/1.0\r\nHost: example.org\r\n\r\n"
+            url._build_request() == expected_request
     )
 
 
