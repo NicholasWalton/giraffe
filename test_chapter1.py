@@ -4,18 +4,7 @@ from chapter1 import URL
 from io import StringIO
 
 SAMPLE_HTTP_RESPONSE = """HTTP/1.0 200 OK
-Accept-Ranges: bytes
-Age: 422085
-Cache-Control: max-age=604800
 Content-Type: text/html; charset=UTF-8
-Date: Tue, 09 Jul 2024 15:38:33 GMT
-Etag: "3147526947+gzip"
-Expires: Tue, 16 Jul 2024 15:38:33 GMT
-Last-Modified: Thu, 17 Oct 2019 07:18:26 GMT
-Server: ECAcc (nyd/D169)
-Vary: Accept-Encoding
-X-Cache: HIT
-Content-Length: 1256
 Connection: close
 
 <!doctype html>
