@@ -13,9 +13,7 @@ class URL:
 
     def request(self):
         with socket.socket(
-                family=socket.AF_INET,
-                type=socket.SOCK_STREAM,
-                proto=socket.IPPROTO_TCP
+                family=socket.AF_INET, type=socket.SOCK_STREAM, proto=socket.IPPROTO_TCP
         ) as s:
             s.connect((self.host, 80))
             request = self._build_request()
@@ -45,7 +43,8 @@ class URL:
 
         while True:
             line = response.readline()
-            if line == "\r\n": break
+            if line == "\r\n":
+                break
             header, value = line.split(":", 1)
             response_headers[header.casefold()] = value.strip()
 
@@ -63,7 +62,7 @@ class URL:
                 in_tag = False
             elif not in_tag:
                 rendered.append(c)
-        return ''.join(rendered)
+        return "".join(rendered)
 
     def load(self):
         body = self.request()

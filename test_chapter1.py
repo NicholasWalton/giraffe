@@ -1,7 +1,8 @@
+from io import StringIO
+
 import pytest
 
 from chapter1 import URL
-from io import StringIO
 
 EMPTY_HTML = "<!doctype html>\r\n<html>\r\n</html>\r\n"
 
@@ -32,7 +33,9 @@ def test_url_path():
 
 def test_build_request():
     url = URL("http://example.org/index.html/")
-    assert url._build_request() == "GET /index.html/ HTTP/1.0\r\nHost: example.org\r\n\r\n"
+    assert (
+            url._build_request() == "GET /index.html/ HTTP/1.0\r\nHost: example.org\r\n\r\n"
+    )
 
 
 @pytest.fixture()
