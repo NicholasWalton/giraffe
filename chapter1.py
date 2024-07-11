@@ -34,8 +34,10 @@ class URL:
         return content
 
     def _build_request(self):
-        request = f"GET {self.path} HTTP/1.0\r\n"
+        request = f"GET {self.path} HTTP/1.1\r\n"
         request += f"Host: {self.host}\r\n"
+        request += "Connection: close\r\n"
+        request += "User-Agent: giraffe\r\n"
         request += "\r\n"
         return request
 

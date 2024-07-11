@@ -31,16 +31,15 @@ def test_url_path():
     assert url.path == "/my/path"
 
 
-def test_build_request():
-    url = URL("http://example.org/index.html/")
+def test_build_request(example_url):
     expected_request = '\r\n'.join((
-        "GET /index.html/ HTTP/1.0",
+        "GET /index.html HTTP/1.1",
         "Host: example.org",
+        "Connection: close",
+        "User-Agent: giraffe",
         "\r\n",
     ))
-    assert (
-            url._build_request() == expected_request
-    )
+    assert example_url._build_request() == expected_request
 
 
 @pytest.fixture()
