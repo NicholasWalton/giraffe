@@ -72,3 +72,13 @@ def test_show_empty(example_url):
 
 def test_show_content(example_url):
     assert example_url.show("<html><body>content</body></html>") == "content"
+
+
+def test_https_default_port():
+    url = URL("https://example.org/index.html")
+    assert url.port == 443
+
+
+def test_custom_port():
+    url = URL("https://example.org:8080")
+    assert url.port == 8080
