@@ -12,18 +12,16 @@ class URL:
         self.path = "/" + url
 
     def request(self):
-        s = socket.socket(
-            family=socket.AF_INET,
-            type=socket.SOCK_STREAM,
-            proto=socket.IPPROTO_TCP
-        )
-        s.connect((self.host, 80))
-
-        request = self._build_request()
-        s.send(request.encode("utf8"))
-        response = s.makefile("r", encoding="utf8", newline="\r\n")
-        content = self._parse_response(response)
-        s.close()
+        with socket.socket(
+                family=socket.AF_INET,
+                type=socket.SOCK_STREAM,
+                proto=socket.IPPROTO_TCP
+        ) as s:
+            s.connect((self.host, 80))
+            request = self._build_request()
+            s.send(request.encode("utf8"))
+            response = s.makefile("r", encoding="utf8", newline="\r\n")
+            content = self._parse_response(response)
         return content
 
     def _build_request(self):
@@ -54,3 +52,11 @@ class URL:
         assert "transfer-encoding" not in response_headers
         assert "content-encoding" not in response_headers
         return response_headers
+
+
+def main():
+    print(URL("http://example.org").request())
+
+
+if __name__ == '__main__':
+    main()
