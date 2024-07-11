@@ -1,8 +1,12 @@
+import pathlib
 import socket
 import ssl
 from enum import Enum
 
+DEFAULT_PAGE = "file://./example1-simple.html"
+
 Scheme = Enum("Scheme", ("http", "https", "file"))
+
 
 class URL:
 
@@ -23,9 +27,21 @@ class URL:
                     self.port = int(port)
                 self.path = "/" + url
             case Scheme.file:
-                self.path = url.replace('\\','/')
+                self.path = url.replace('\\', '/')
 
     def request(self):
+        match self.scheme:
+            case Scheme.http | Scheme.https:
+                response = self.get_http_response()
+                content = self._parse_response(response)
+            case Scheme.file:
+                file_path = self.path
+                file_path = file_path.removeprefix('/')
+                with pathlib.Path(file_path).open(encoding="utf8", newline="\r\n") as f:
+                    content = ''.join(f.readlines())
+        return content
+
+    def get_http_response(self):
         with socket.socket(
                 family=socket.AF_INET, type=socket.SOCK_STREAM, proto=socket.IPPROTO_TCP
         ) as s:
@@ -36,8 +52,7 @@ class URL:
             request = self._build_request()
             s.send(request.encode("utf8"))
             response = s.makefile("r", encoding="utf8", newline="\r\n")
-            content = self._parse_response(response)
-        return content
+        return response
 
     def _build_request(self):
         request = f"GET {self.path} HTTP/1.1\r\n"
@@ -91,7 +106,8 @@ class URL:
 def main():
     import sys
 
-    print(URL("https://browser.engineering/examples/example1-simple.html" if len(sys.argv) <= 1 else sys.argv[1]).load())
+    requested_url_string = DEFAULT_PAGE if len(sys.argv) <= 1 else sys.argv[1]
+    print(URL(requested_url_string).load())
 
 
 if __name__ == "__main__":

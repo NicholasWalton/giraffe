@@ -1,7 +1,9 @@
+import pathlib
 from io import StringIO
 
 import pytest
 
+import chapter1
 from chapter1 import URL
 
 EMPTY_HTML = "<!doctype html>\r\n<html>\r\n</html>\r\n"
@@ -89,5 +91,16 @@ def test_custom_port():
 
 
 def test_file_scheme(tmp_path):
-    file_url = URL(f"file:///{tmp_path}")
-    assert f'{file_url.scheme.name}://{file_url.path}' == tmp_path.as_uri()
+    tmp_file = tmp_path / "example.html"
+    expected_response = EMPTY_HTML.encode('utf-8')
+    tmp_file.write_bytes(expected_response)
+    file_url = URL(f"file:///{tmp_file}")
+    assert f'{file_url.scheme.name}://{file_url.path}' == tmp_file.as_uri()
+    assert file_url.request() == EMPTY_HTML
+
+
+def test_default_page():
+    url = URL(chapter1.DEFAULT_PAGE)
+    body = url.request()
+    assert body == pathlib.Path("./example1-simple.html").read_text()
+    assert url.load().strip() == "This is a simple\n    web page with some\n    text in it."
