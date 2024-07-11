@@ -2,7 +2,7 @@ import socket
 import ssl
 from enum import Enum
 
-Scheme = Enum("Scheme", ("http", "https"))
+Scheme = Enum("Scheme", ("http", "https", "file"))
 
 class URL:
 
@@ -16,9 +16,11 @@ class URL:
         if "/" not in url:
             url += "/"
         self.host, url = url.split("/", 1)
-        if ":" in self.host:
-            self.host, port = self.host.split(":", 1)
-            self.port = int(port)
+        match self.scheme:
+            case Scheme.http | Scheme.https:
+                if ":" in self.host:
+                    self.host, port = self.host.split(":", 1)
+                    self.port = int(port)
         self.path = "/" + url
 
     def request(self):
