@@ -86,3 +86,8 @@ def test_https_default_port():
 def test_custom_port():
     url = URL("https://example.org:8080")
     assert url.port == 8080
+
+
+def test_file_scheme(tmp_path):
+    file_url = URL(f"file:///{tmp_path}")
+    assert f'{file_url.scheme.name}://{file_url.path}' == tmp_path.as_uri()
