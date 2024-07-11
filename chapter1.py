@@ -71,8 +71,10 @@ class URL:
 
 
 def main():
-    print(URL("http://example.org").load())
+    import sys
+
+    print(URL("http://example.com" if len(sys.argv) <= 1 else sys.argv[1]).load())
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
