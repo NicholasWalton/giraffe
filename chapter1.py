@@ -2,6 +2,7 @@ import pathlib
 import socket
 import ssl
 from enum import Enum, StrEnum, auto
+import sys
 
 DEFAULT_PAGE = "file://./example1-simple.html"
 
@@ -12,9 +13,12 @@ class Scheme(StrEnum):
     file = auto()
     data = auto()
 
+_sockets = {}
 
 class URL:
     def __init__(self, url):
+        self._headers = {}
+
         if url.startswith("view-source:"):
             self.renderer = SourceRenderer
         else:
@@ -38,6 +42,7 @@ class URL:
                     self.host, port = self.host.split(":", 1)
                     self.port = int(port)
                 self.path = "/" + url
+                self._address = (self.host, self.port)
             case Scheme.file:
                 self.path = authority + "/" + url.replace("\\", "/")
             case Scheme.data:
@@ -57,22 +62,27 @@ class URL:
         return content
 
     def get_http_response(self):
-        with socket.socket(
-            family=socket.AF_INET, type=socket.SOCK_STREAM, proto=socket.IPPROTO_TCP
-        ) as s:
-            s.connect((self.host, self.port))
+        if (self._address, self.scheme) not in _sockets:
+            print(f"Creating new socket for {self._address}", file=sys.stderr)
+            new_socket = socket.socket(
+                family=socket.AF_INET, type=socket.SOCK_STREAM, proto=socket.IPPROTO_TCP
+            )
+            new_socket.connect(self._address)
             if self.scheme == Scheme.https:
                 ctx = ssl.create_default_context()
-                s = ctx.wrap_socket(s, server_hostname=self.host)
-            request = self._build_request()
-            s.send(request.encode("utf8"))
-            response = s.makefile("r", encoding="utf8", newline="\r\n")
+                new_socket = ctx.wrap_socket(new_socket, server_hostname=self.host)
+            _sockets[self._address, self.scheme] = new_socket
+        self.socket = _sockets[self._address, self.scheme]
+        request = self._build_request()
+        self.socket.send(request.encode("utf8"))
+        response = self.socket.makefile("r", encoding="utf8", newline="\r\n")
         return response
 
     def _build_request(self):
         request = f"GET {self.path} HTTP/1.1\r\n"
         request += f"Host: {self.host}\r\n"
         request += "User-Agent: giraffe\r\n"
+        # request += "Connection: close\r\n"
         request += "\r\n"
         return request
 
@@ -80,14 +90,19 @@ class URL:
         version, status, explanation = self._parse_statusline(response)
         self._headers = self._parse_headers(response)
         content_length = int(self._headers.get("content-length", 0))
+        print(f"content_length={content_length}", file=sys.stderr)
         if content_length:
             content = response.read(content_length)
+            # trailing = response.read()
+            # print(f"trailing:[{trailing}]", file=sys.stderr)
         else:
             content = response.read()
+            self._headers["connection"] = "close"
         return content
 
     def _parse_statusline(self, response):
         statusline = response.readline()
+        print(f"[{statusline}]", file=sys.stderr)
         return statusline.split(" ", 2)
 
     def _parse_headers(self, response):
@@ -106,7 +121,15 @@ class URL:
 
     def load(self):
         body = self.request()
-        return self.show(body)
+        rendered = self.show(body)
+        
+        if self._headers.get("connection") == "close":            
+            print(f"Closing socket for {self._address}", file=sys.stderr)
+            _sockets.pop((self._address, self.scheme)).close()
+        else:
+            print(f"Headers were [{self._headers}]", file=sys.stderr)
+        return rendered
+
 
     def show(self, body):
         return self.renderer(body).render()
