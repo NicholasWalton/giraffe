@@ -99,18 +99,36 @@ class URL:
     def show(self, body):
         in_tag = False
         rendered = []
+        entity = ""
+        in_entity = False
         for c in body:
             if c == "<":
                 in_tag = True
             elif c == ">":
                 in_tag = False
             elif not in_tag:
-                rendered.append(c)
+                if c == "&":
+                    in_entity = True
+                if in_entity:
+                    entity += c
+                    if c == ";":
+                        rendered.append(parse_entity(entity))
+                        entity = ""
+                else:
+                    rendered.append(c)
         return "".join(rendered)
 
     def load(self):
         body = self.request()
         return self.show(body)
+
+
+def parse_entity(entity):
+    if entity == "&lt;":
+        return "<"
+    elif entity == "&gt;":
+        return ">"
+    return entity
 
 
 def main():

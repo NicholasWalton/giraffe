@@ -4,7 +4,7 @@ from io import StringIO
 import pytest
 
 import chapter1
-from chapter1 import URL
+from chapter1 import URL, parse_entity
 
 EMPTY_HTML = "<!doctype html>\r\n<html>\r\n</html>\r\n"
 
@@ -121,3 +121,14 @@ def test_default_page():
 def test_data_scheme():
     url = URL("data:text/html,Hello world!")
     assert url.load() == "Hello world!"
+
+
+def test_entites():
+    assert parse_entity("&lt;") == "<"
+    assert parse_entity("&gt;") == ">"
+    assert parse_entity("&unknown;") == "&unknown;"
+
+
+def test_entities_in_html():
+    url = URL("data:text/html,<http>hello &lt;&unknown;&gt;</http>")
+    assert url.load() == "hello <&unknown;>"
