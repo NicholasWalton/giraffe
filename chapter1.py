@@ -88,12 +88,13 @@ class URL:
 
     def _parse_response(self, response):
         version, status, explanation = self._parse_statusline(response)
+        assert status == "200"
         self._headers = self._parse_headers(response)
         content_length = int(self._headers.get("content-length", 0))
         print(f"content_length={content_length}", file=sys.stderr)
         if content_length:
             content = response.read(content_length)
-            # trailing = response.read()
+            # trailing = response.read(12)
             # print(f"trailing:[{trailing}]", file=sys.stderr)
         else:
             content = response.read()
