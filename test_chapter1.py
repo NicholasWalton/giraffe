@@ -132,3 +132,8 @@ def test_entites():
 def test_entities_in_html():
     url = URL("data:text/html,<http>hello &lt;&unknown;&gt;</http>")
     assert url.load() == "hello <&unknown;>"
+
+
+def test_view_source():
+    url = URL("view-source:" + chapter1.DEFAULT_PAGE)
+    assert url.load() == pathlib.Path("./example1-simple.html").read_text()

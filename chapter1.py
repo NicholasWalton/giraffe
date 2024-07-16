@@ -15,6 +15,11 @@ class Scheme(StrEnum):
 
 class URL:
     def __init__(self, url):
+        if url.startswith("view-source:"):
+            self.renderer = SourceRenderer
+        else:
+            self.renderer = HtmlRenderer
+        url = url.removeprefix("view-source:")
         scheme, url = url.split(":", 1)
         self.scheme = Scheme[scheme]
         if self.scheme == Scheme.http:
@@ -101,17 +106,25 @@ class URL:
         return self.show(body)
 
     def show(self, body):
-        return HtmlRenderer(body).render()
+        return self.renderer(body).render()
 
 
-class HtmlRenderer():
+class SourceRenderer:
+    def __init__(self, body):
+        self.body = body
+
+    def render(self):
+        return self.body
+
+
+class HtmlRenderer:
     def __init__(self, body):
         self.in_tag = False
         self.rendered = []
         self.entity = ""
         self.in_entity = False
         self.body = body
-    
+
     def render(self):
         for c in self.body:
             if c == "<":
@@ -122,7 +135,7 @@ class HtmlRenderer():
                 self._process_character_outside_tag(c)
         self.body = ""
         return "".join(self.rendered)
-    
+
     def _process_character_outside_tag(self, c):
         if c == "&":
             self.in_entity = True
@@ -134,7 +147,7 @@ class HtmlRenderer():
                 self.in_entity = False
         else:
             self.rendered.append(c)
-        
+
 
 def parse_entity(entity):
     if entity == "&lt;":
