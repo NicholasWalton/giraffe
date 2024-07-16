@@ -96,6 +96,10 @@ class URL:
         assert "content-encoding" not in response_headers
         return response_headers
 
+    def load(self):
+        body = self.request()
+        return self.show(body)
+
     def show(self, body):
         in_tag = False
         rendered = []
@@ -117,10 +121,6 @@ class URL:
                 else:
                     rendered.append(c)
         return "".join(rendered)
-
-    def load(self):
-        body = self.request()
-        return self.show(body)
 
 
 def parse_entity(entity):
