@@ -1,33 +1,42 @@
 import pathlib
 import socket
 import ssl
-from enum import Enum
+from enum import Enum, StrEnum, auto
 
 DEFAULT_PAGE = "file://./example1-simple.html"
 
-Scheme = Enum("Scheme", ("http", "https", "file"))
+class Scheme(StrEnum):
+    http = auto()
+    https = auto()
+    file = auto()
+    
+    # def populate(url_string, url)
 
 
 class URL:
 
     def __init__(self, url):
-        scheme, url = url.split("://", 1)
+        scheme, url = url.split(":", 1)
         self.scheme = Scheme[scheme]
+        # self.scheme.populate(url, self)
         if self.scheme == Scheme.http:
             self.port = 80
         elif self.scheme == Scheme.https:
             self.port = 443
-        if "/" not in url:
-            url += "/"
+        if url.startswith('//'):
+            url = url.removeprefix('//')
+            if "/" not in url:
+                url += "/"
+            authority, url = url.split('/', 1)
         match self.scheme:
             case Scheme.http | Scheme.https:
-                self.host, url = url.split("/", 1)
+                self.host = authority
                 if ":" in self.host:
                     self.host, port = self.host.split(":", 1)
                     self.port = int(port)
                 self.path = "/" + url
             case Scheme.file:
-                self.path = url.replace('\\', '/')
+                self.path = authority + "/" + url.replace('\\', '/')
 
     def request(self):
         match self.scheme:
