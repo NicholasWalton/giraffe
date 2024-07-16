@@ -72,15 +72,18 @@ class URL:
     def _build_request(self):
         request = f"GET {self.path} HTTP/1.1\r\n"
         request += f"Host: {self.host}\r\n"
-        request += "Connection: close\r\n"
         request += "User-Agent: giraffe\r\n"
         request += "\r\n"
         return request
 
     def _parse_response(self, response):
         version, status, explanation = self._parse_statusline(response)
-        headers = self._parse_headers(response)
-        content = response.read()
+        self._headers = self._parse_headers(response)
+        content_length = int(self._headers.get("content-length", 0))
+        if content_length:
+            content = response.read(content_length)
+        else:
+            content = response.read()
         return content
 
     def _parse_statusline(self, response):
@@ -160,8 +163,10 @@ def parse_entity(entity):
 def main():
     import sys
 
-    requested_url_string = DEFAULT_PAGE if len(sys.argv) <= 1 else sys.argv[1]
-    print(URL(requested_url_string).load())
+    if len(sys.argv) <= 1:
+        sys.argv.append(DEFAULT_PAGE)
+    for requested_url_string in sys.argv[1:]:
+        print(URL(requested_url_string).load())
 
 
 if __name__ == "__main__":

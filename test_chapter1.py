@@ -38,7 +38,6 @@ def test_build_request(example_url):
         (
             "GET /index.html HTTP/1.1",
             "Host: example.org",
-            "Connection: close",
             "User-Agent: giraffe",
             "\r\n",
         )
@@ -137,3 +136,17 @@ def test_entities_in_html():
 def test_view_source():
     url = URL("view-source:" + chapter1.DEFAULT_PAGE)
     assert url.load() == pathlib.Path("./example1-simple.html").read_text()
+
+
+def test_keep_alive(example_url):
+    KEEP_ALIVE_HTTP_RESPONSE = """HTTP/1.0 200 OK
+Content-Type: text/html; charset=UTF-8
+Content-Length: 12
+
+0123456789
+noise
+"""
+    fake_response = StringIO(KEEP_ALIVE_HTTP_RESPONSE, newline="\r\n")
+    body = example_url._parse_response(fake_response)
+    assert example_url._headers["content-length"] == "12"
+    assert body == "0123456789\r\n"
