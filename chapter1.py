@@ -101,27 +101,40 @@ class URL:
         return self.show(body)
 
     def show(self, body):
-        in_tag = False
-        rendered = []
-        entity = ""
-        in_entity = False
-        for c in body:
-            if c == "<":
-                in_tag = True
-            elif c == ">":
-                in_tag = False
-            elif not in_tag:
-                if c == "&":
-                    in_entity = True
-                if in_entity:
-                    entity += c
-                    if c == ";":
-                        rendered.append(parse_entity(entity))
-                        entity = ""
-                else:
-                    rendered.append(c)
-        return "".join(rendered)
+        return HtmlRenderer(body).render()
 
+
+class HtmlRenderer():
+    def __init__(self, body):
+        self.in_tag = False
+        self.rendered = []
+        self.entity = ""
+        self.in_entity = False
+        self.body = body
+    
+    def render(self):
+        for c in self.body:
+            if c == "<":
+                self.in_tag = True
+            elif c == ">":
+                self.in_tag = False
+            elif not self.in_tag:
+                self._process_character_outside_tag(c)
+        self.body = ""
+        return "".join(self.rendered)
+    
+    def _process_character_outside_tag(self, c):
+        if c == "&":
+            self.in_entity = True
+        if self.in_entity:
+            self.entity += c
+            if c == ";":
+                self.rendered.append(parse_entity(self.entity))
+                self.entity = ""
+                self.in_entity = False
+        else:
+            self.rendered.append(c)
+        
 
 def parse_entity(entity):
     if entity == "&lt;":
