@@ -9,8 +9,7 @@ class Scheme(StrEnum):
     http = auto()
     https = auto()
     file = auto()
-    
-    # def populate(url_string, url)
+    data = auto()
 
 
 class URL:
@@ -18,7 +17,6 @@ class URL:
     def __init__(self, url):
         scheme, url = url.split(":", 1)
         self.scheme = Scheme[scheme]
-        # self.scheme.populate(url, self)
         if self.scheme == Scheme.http:
             self.port = 80
         elif self.scheme == Scheme.https:
@@ -37,6 +35,8 @@ class URL:
                 self.path = "/" + url
             case Scheme.file:
                 self.path = authority + "/" + url.replace('\\', '/')
+            case Scheme.data:
+                self.path = url.removeprefix("text/html,")
 
     def request(self):
         match self.scheme:
@@ -47,6 +47,8 @@ class URL:
                 file_path = self.path
                 with pathlib.Path(file_path).open(encoding="utf8", newline="\r\n") as f:
                     content = ''.join(f.readlines())
+            case Scheme.data:
+                content = self.path
         return content
 
     def get_http_response(self):

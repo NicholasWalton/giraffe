@@ -110,3 +110,8 @@ def test_default_page():
     body = url.request()
     assert body == pathlib.Path("./example1-simple.html").read_text()
     assert url.load().strip() == "This is a simple\n    web page with some\n    text in it."
+
+
+def test_data_scheme():
+    url = URL("data:text/html,Hello world!")
+    assert url.load() == "Hello world!"
