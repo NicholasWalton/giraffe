@@ -36,7 +36,6 @@ class URL:
                 content = self._parse_response(response)
             case Scheme.file:
                 file_path = self.path
-                file_path = file_path.removeprefix('/')
                 with pathlib.Path(file_path).open(encoding="utf8", newline="\r\n") as f:
                     content = ''.join(f.readlines())
         return content
