@@ -34,13 +34,15 @@ def test_url_path():
 
 
 def test_build_request(example_url):
-    expected_request = '\r\n'.join((
-        "GET /index.html HTTP/1.1",
-        "Host: example.org",
-        "Connection: close",
-        "User-Agent: giraffe",
-        "\r\n",
-    ))
+    expected_request = "\r\n".join(
+        (
+            "GET /index.html HTTP/1.1",
+            "Host: example.org",
+            "Connection: close",
+            "User-Agent: giraffe",
+            "\r\n",
+        )
+    )
     assert example_url._build_request() == expected_request
 
 
@@ -92,13 +94,14 @@ def test_custom_port():
 
 def test_file_scheme(tmp_path):
     tmp_file = tmp_path / "example.html"
-    expected_response = EMPTY_HTML.encode('utf-8')
+    expected_response = EMPTY_HTML.encode("utf-8")
     tmp_file.write_bytes(expected_response)
     assert str(tmp_file).startswith("/")
     file_url = URL(f"file://{tmp_file}")
     assert file_url.path == str(tmp_file)
-    assert f'{file_url.scheme.name}://{file_url.path}' == tmp_file.as_uri()
+    assert f"{file_url.scheme.name}://{file_url.path}" == tmp_file.as_uri()
     assert file_url.request() == EMPTY_HTML
+
 
 def test_file_scheme_osx():
     file_url = URL("file:///Users/league/giraffe/example1-simple.html")
@@ -109,7 +112,10 @@ def test_default_page():
     url = URL(chapter1.DEFAULT_PAGE)
     body = url.request()
     assert body == pathlib.Path("./example1-simple.html").read_text()
-    assert url.load().strip() == "This is a simple\n    web page with some\n    text in it."
+    assert (
+        url.load().strip()
+        == "This is a simple\n    web page with some\n    text in it."
+    )
 
 
 def test_data_scheme():

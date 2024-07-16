@@ -5,6 +5,7 @@ from enum import Enum, StrEnum, auto
 
 DEFAULT_PAGE = "file://./example1-simple.html"
 
+
 class Scheme(StrEnum):
     http = auto()
     https = auto()
@@ -13,7 +14,6 @@ class Scheme(StrEnum):
 
 
 class URL:
-
     def __init__(self, url):
         scheme, url = url.split(":", 1)
         self.scheme = Scheme[scheme]
@@ -21,11 +21,11 @@ class URL:
             self.port = 80
         elif self.scheme == Scheme.https:
             self.port = 443
-        if url.startswith('//'):
-            url = url.removeprefix('//')
+        if url.startswith("//"):
+            url = url.removeprefix("//")
             if "/" not in url:
                 url += "/"
-            authority, url = url.split('/', 1)
+            authority, url = url.split("/", 1)
         match self.scheme:
             case Scheme.http | Scheme.https:
                 self.host = authority
@@ -34,7 +34,7 @@ class URL:
                     self.port = int(port)
                 self.path = "/" + url
             case Scheme.file:
-                self.path = authority + "/" + url.replace('\\', '/')
+                self.path = authority + "/" + url.replace("\\", "/")
             case Scheme.data:
                 self.path = url.removeprefix("text/html,")
 
@@ -46,14 +46,14 @@ class URL:
             case Scheme.file:
                 file_path = self.path
                 with pathlib.Path(file_path).open(encoding="utf8", newline="\r\n") as f:
-                    content = ''.join(f.readlines())
+                    content = "".join(f.readlines())
             case Scheme.data:
                 content = self.path
         return content
 
     def get_http_response(self):
         with socket.socket(
-                family=socket.AF_INET, type=socket.SOCK_STREAM, proto=socket.IPPROTO_TCP
+            family=socket.AF_INET, type=socket.SOCK_STREAM, proto=socket.IPPROTO_TCP
         ) as s:
             s.connect((self.host, self.port))
             if self.scheme == Scheme.https:
