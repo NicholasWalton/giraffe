@@ -2,8 +2,9 @@ import os
 import pathlib
 import socket
 import ssl
-from enum import StrEnum, auto
 import sys
+from enum import StrEnum, auto
+from pprint import pformat
 
 DEFAULT_PAGE = "file://./example1-simple.html"
 
@@ -19,6 +20,7 @@ _sockets = {}
 class URL:
     def __init__(self, url):
         self._headers = {}
+        self._encoding = "utf-8"
 
         if url.startswith("view-source:"):
             self.renderer = SourceRenderer
@@ -66,7 +68,7 @@ class URL:
 
     def get_http_response(self):
         if (self._address, self.scheme) not in _sockets:
-            print(f"Creating new socket for {self._address}", file=sys.stderr)
+            _debug(f"Creating new socket for {self._address}")
             new_socket = socket.socket(
                 family=socket.AF_INET, type=socket.SOCK_STREAM, proto=socket.IPPROTO_TCP
             )
@@ -78,14 +80,13 @@ class URL:
         self.socket = _sockets[self._address, self.scheme]
         request = self._build_request()
         self.socket.send(request.encode("utf8"))
-        response = self.socket.makefile("r", encoding="utf8", newline="\r\n")
+        response = self.socket.makefile("rb", encoding="utf8", newline="\r\n")
         return response
 
     def _build_request(self):
         request = f"GET {self.path} HTTP/1.1\r\n"
         request += f"Host: {self.host}\r\n"
         request += "User-Agent: giraffe\r\n"
-        # request += "Connection: close\r\n"
         request += "\r\n"
         return request
 
@@ -93,30 +94,31 @@ class URL:
         version, status, explanation = self._parse_statusline(response)
         assert status == "200"
         self._headers = self._parse_headers(response)
+        _debug(f"Original headers: {pformat(self._headers)}")
         content_length = int(self._headers.get("content-length", 0))
-        print(f"content_length={content_length}", file=sys.stderr)
+        _debug(f"expected content_length={content_length}")
         if content_length:
             content = response.read(content_length)
-            # trailing = response.read(12)
-            # print(f"trailing:[{trailing}]", file=sys.stderr)
         else:
             content = response.read()
             self._headers["connection"] = "close"
-        return content
+        _debug(f"got content_length={len(content)}")
+        return content.decode(self._encoding)
 
     def _parse_statusline(self, response):
         statusline = response.readline()
-        print(f"[{statusline}]", file=sys.stderr)
-        return statusline.split(" ", 2)
+        _debug(f"statusline: [{statusline}]")
+        return statusline.decode(self._encoding).split(" ", 2)
 
     def _parse_headers(self, response):
         response_headers = {}
 
         while True:
             line = response.readline()
-            if line == "\r\n":
+            if line == b'\r\n':
                 break
-            header, value = line.split(":", 1)
+            _debug(f"header line: [{line}]")
+            header, value = line.decode(self._encoding).split(":", 1)
             response_headers[header.casefold()] = value.strip()
 
         assert "transfer-encoding" not in response_headers
@@ -128,10 +130,10 @@ class URL:
         rendered = self.show(body)
         
         if self._headers.get("connection") == "close":            
-            print(f"Closing socket for {self._address}", file=sys.stderr)
+            _debug(f"Closing socket for {self._address}")
             _sockets.pop((self._address, self.scheme)).close()
         else:
-            print(f"Headers were [{self._headers}]", file=sys.stderr)
+            _debug(f"Headers were [{self._headers}]")
         return rendered
 
 
@@ -186,6 +188,8 @@ def parse_entity(entity):
         return ">"
     return entity
 
+def _debug(*args, **kwargs):
+    print(*args, **kwargs, file=sys.stderr)
 
 def main():
     import sys

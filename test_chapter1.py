@@ -1,5 +1,5 @@
 import pathlib
-from io import StringIO
+from io import BytesIO
 
 import pytest
 
@@ -52,8 +52,10 @@ def example_url():
 
 @pytest.fixture
 def fake_response():
-    return StringIO(SAMPLE_HTTP_RESPONSE, newline="\r\n")
+    return _encode_string_as_http_response(SAMPLE_HTTP_RESPONSE)
 
+def _encode_string_as_http_response(string):
+    return BytesIO(string.replace('\n', '\r\n').encode("utf-8"))
 
 def test_parse_statusline(example_url, fake_response):
     version, status, explanation = example_url._parse_statusline(fake_response)
@@ -123,7 +125,7 @@ def test_data_scheme():
     assert url.load() == "Hello world!"
 
 
-def test_entites():
+def test_entities():
     assert parse_entity("&lt;") == "<"
     assert parse_entity("&gt;") == ">"
     assert parse_entity("&unknown;") == "&unknown;"
@@ -147,7 +149,7 @@ Content-Length: 12
 0123456789
 noise
 """
-    fake_response = StringIO(KEEP_ALIVE_HTTP_RESPONSE, newline="\r\n")
+    fake_response = _encode_string_as_http_response(KEEP_ALIVE_HTTP_RESPONSE)
     body = example_url._parse_response(fake_response)
     assert example_url._headers["content-length"] == "12"
     assert body == "0123456789\r\n"
