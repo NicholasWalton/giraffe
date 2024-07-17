@@ -201,7 +201,9 @@ def main():
     if len(sys.argv) <= 1:
         sys.argv.append(DEFAULT_PAGE)
     for requested_url_string in sys.argv[1:]:
-        print(URL(requested_url_string).load())
+        rendered = URL(requested_url_string).load()
+        encoded = rendered.encode("utf-8") # Prevent UnicodeEncodeError when a PowerShell pipe implies cp1252
+        print(encoded)
 
 
 if __name__ == "__main__":
