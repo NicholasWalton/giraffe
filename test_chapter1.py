@@ -95,9 +95,10 @@ def test_file_scheme(tmp_path):
     tmp_file = tmp_path / "example.html"
     expected_response = EMPTY_HTML.encode("utf-8")
     tmp_file.write_bytes(expected_response)
-    assert str(tmp_file).startswith("/")
-    file_url = URL(f"file://{tmp_file}")
-    assert file_url.path == str(tmp_file)
+    if str(tmp_file).startswith("/"):
+        file_url = URL(f"file://{tmp_file}")
+    else:
+        file_url = URL(f"file:///{tmp_file}")
     assert f"{file_url.scheme.name}://{file_url.path}" == tmp_file.as_uri()
     assert file_url.request() == EMPTY_HTML
 

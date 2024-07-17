@@ -1,7 +1,8 @@
+import os
 import pathlib
 import socket
 import ssl
-from enum import Enum, StrEnum, auto
+from enum import StrEnum, auto
 import sys
 
 DEFAULT_PAGE = "file://./example1-simple.html"
@@ -55,6 +56,8 @@ class URL:
                 content = self._parse_response(response)
             case Scheme.file:
                 file_path = self.path
+                if os.sep != '/':
+                    file_path = file_path.removeprefix('/')
                 with pathlib.Path(file_path).open(encoding="utf8", newline="\r\n") as f:
                     content = "".join(f.readlines())
             case Scheme.data:
