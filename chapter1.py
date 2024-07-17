@@ -15,7 +15,9 @@ class Scheme(StrEnum):
     file = auto()
     data = auto()
 
+
 _sockets = {}
+
 
 class URL:
     def __init__(self, url):
@@ -80,8 +82,7 @@ class URL:
         self.socket = _sockets[self._address, self.scheme]
         request = self._build_request()
         self.socket.send(request.encode("utf8"))
-        response = self.socket.makefile("rb", encoding="utf8", newline="\r\n")
-        return response
+        return self.socket.makefile("rb", encoding="utf8", newline="\r\n")
 
     def _build_request(self):
         request = f"GET {self.path} HTTP/1.1\r\n"
