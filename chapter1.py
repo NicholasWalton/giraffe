@@ -54,8 +54,7 @@ class URL:
     def request(self):
         match self.scheme:
             case Scheme.http | Scheme.https:
-                response = self.get_http_response()
-                content = self._parse_response(response)
+                content = self._do_http_request()
             case Scheme.file:
                 file_path = self.path
                 if os.sep != '/':
@@ -90,11 +89,16 @@ class URL:
         request += "\r\n"
         return request
 
-    def _parse_response(self, response):
+    def _do_http_request(self):
+        response = self.get_http_response()
         version, status, explanation = self._parse_statusline(response)
         assert status == "200"
-        self._headers = self._parse_headers(response)
+        self._parse_headers(response)
         _debug(f"Original headers: {pformat(self._headers)}")
+        return self._parse_body(response)
+
+
+    def _parse_body(self, response):
         content_length = int(self._headers.get("content-length", 0))
         _debug(f"expected content_length={content_length}")
         if content_length:
@@ -123,7 +127,7 @@ class URL:
 
         assert "transfer-encoding" not in response_headers
         assert "content-encoding" not in response_headers
-        return response_headers
+        self._headers = response_headers
 
     def load(self):
         body = self.request()

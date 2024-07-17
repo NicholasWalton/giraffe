@@ -66,13 +66,15 @@ def test_parse_statusline(example_url, fake_response):
 
 def test_parse_headers(example_url, fake_response):
     _ = example_url._parse_statusline(fake_response)
-    headers = example_url._parse_headers(fake_response)
+    example_url._parse_headers(fake_response)
 
-    assert headers["content-type"] == "text/html; charset=UTF-8"
+    assert example_url._headers["content-type"] == "text/html; charset=UTF-8"
 
 
 def test_parse_response(example_url, fake_response):
-    assert example_url._parse_response(fake_response) == EMPTY_HTML
+    _ = example_url._parse_statusline(fake_response)
+    example_url._parse_headers(fake_response)
+    assert example_url._parse_body(fake_response) == EMPTY_HTML
 
 
 def test_show_empty(example_url):
@@ -150,6 +152,8 @@ Content-Length: 12
 noise
 """
     fake_response = _encode_string_as_http_response(KEEP_ALIVE_HTTP_RESPONSE)
-    body = example_url._parse_response(fake_response)
+    _ = example_url._parse_statusline(fake_response)
+    example_url._parse_headers(fake_response)
     assert example_url._headers["content-length"] == "12"
+    body = example_url._parse_body(fake_response)
     assert body == "0123456789\r\n"
