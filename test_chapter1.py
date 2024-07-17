@@ -54,8 +54,10 @@ def example_url():
 def fake_response():
     return _encode_string_as_http_response(SAMPLE_HTTP_RESPONSE)
 
+
 def _encode_string_as_http_response(string):
     return BytesIO(string.replace('\n', '\r\n').encode("utf-8"))
+
 
 def test_parse_statusline(example_url, fake_response):
     version, status, explanation = example_url._parse_statusline(fake_response)
@@ -117,8 +119,8 @@ def test_default_page():
     body = url.request()
     assert body == pathlib.Path("./example1-simple.html").read_text()
     assert (
-        url.load().strip()
-        == "This is a simple\n    web page with some\n    text in it."
+            url.load().strip()
+            == "This is a simple\n    web page with some\n    text in it."
     )
 
 

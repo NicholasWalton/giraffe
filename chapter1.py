@@ -132,14 +132,13 @@ class URL:
     def load(self):
         body = self.request()
         rendered = self.show(body)
-        
-        if self._headers.get("connection") == "close":            
+
+        if self._headers.get("connection") == "close":
             _debug(f"Closing socket for {self._address}")
             _sockets.pop((self._address, self.scheme)).close()
         else:
             _debug(f"Headers were [{self._headers}]")
         return rendered
-
 
     def show(self, body):
         return self.renderer(body).render()
@@ -192,8 +191,10 @@ def parse_entity(entity):
         return ">"
     return entity
 
+
 def _debug(*args, **kwargs):
     print(*args, **kwargs, file=sys.stderr)
+
 
 def main():
     import sys
@@ -202,7 +203,7 @@ def main():
         sys.argv.append(DEFAULT_PAGE)
     for requested_url_string in sys.argv[1:]:
         rendered = URL(requested_url_string).load()
-        encoded = rendered.encode("utf-8") # Prevent UnicodeEncodeError when a PowerShell pipe implies cp1252
+        encoded = rendered.encode("utf-8")  # Prevent UnicodeEncodeError when a PowerShell pipe implies cp1252
         print(encoded)
 
 
