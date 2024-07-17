@@ -7,7 +7,7 @@ import chapter1
 from chapter1 import URL, parse_entity
 
 EMPTY_HTML = "<!doctype html>\r\n<html>\r\n</html>\r\n"
-
+EXAMPLE_URL = "http://example.org/index.html"
 SAMPLE_HTTP_RESPONSE = """HTTP/1.0 200 OK
 Content-Type: text/html; charset=UTF-8
 Connection: close
@@ -47,7 +47,7 @@ def test_build_request(example_url):
 
 @pytest.fixture()
 def example_url():
-    return URL("http://example.org/index.html")
+    return URL(EXAMPLE_URL)
 
 
 @pytest.fixture
@@ -159,3 +159,31 @@ noise
     assert example_url._headers["content-length"] == "12"
     body = example_url._parse_body(fake_response)
     assert body == "0123456789\r\n"
+
+
+def test_no_redirect(example_url, fake_response):
+    assert not example_url._redirect(fake_response)
+
+
+def test_redirect(example_url):
+    expected_path = "/local_mirror/redirect.html"
+    fake_response = _redirect(f"file://{expected_path}")
+    assert example_url.path != expected_path
+    assert example_url._redirect(fake_response)
+    assert example_url.path == expected_path
+    assert example_url.scheme == chapter1.Scheme.file
+
+
+def test_relative_redirect(example_url):
+    expected_path = "/redirect.html"
+    fake_response = _redirect(expected_path)
+    assert example_url.path != expected_path
+    assert example_url._redirect(fake_response)
+    assert example_url.path == expected_path
+
+
+def _redirect(location):
+    return _encode_string_as_http_response(f"""HTTP/1.0 399 Some kind of redirect
+Location: {location}
+
+""")

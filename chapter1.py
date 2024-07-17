@@ -40,6 +40,7 @@ class URL:
             authority, url = url.split("/", 1)
         match self.scheme:
             case Scheme.http | Scheme.https:
+                self._root = f'{self.scheme}://{authority}'
                 self.host = authority
                 if ":" in self.host:
                     self.host, port = self.host.split(":", 1)
@@ -91,12 +92,28 @@ class URL:
 
     def _do_http_request(self):
         response = self.get_http_response()
-        version, status, explanation = self._parse_statusline(response)
-        assert status == "200"
-        self._parse_headers(response)
-        _debug(f"Original headers: {pformat(self._headers)}")
+        if self._redirect(response):
+            return self.request()
         return self._parse_body(response)
 
+    def _redirect(self, response):
+        version, status, explanation = self._parse_statusline(response)
+        status = int(status)
+        redirect = False
+        match status:
+            case 200:
+                pass
+            case status if status in range(300, 400):
+                redirect = True
+            case _:
+                raise ValueError(f"Can't handle status {status}")
+        self._parse_headers(response)
+        if redirect:
+            redirect_url = self._headers['location']
+            if redirect_url.startswith('/'):
+                redirect_url = self._root + redirect_url
+            self.__init__(redirect_url)
+        return redirect
 
     def _parse_body(self, response):
         content_length = int(self._headers.get("content-length", 0))
@@ -128,6 +145,7 @@ class URL:
         assert "transfer-encoding" not in response_headers
         assert "content-encoding" not in response_headers
         self._headers = response_headers
+        _debug(f"Original headers: {pformat(self._headers)}")
 
     def load(self):
         body = self.request()
