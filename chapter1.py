@@ -84,10 +84,10 @@ class URL:
                 ctx = ssl.create_default_context()
                 new_socket = ctx.wrap_socket(new_socket, server_hostname=self.host)
             _sockets[self._address, self.scheme] = new_socket
-        self.socket = _sockets[self._address, self.scheme]
+        s = _sockets[self._address, self.scheme]
         request = self._build_request()
-        self.socket.send(request.encode("utf8"))
-        return self.socket.makefile("rb", encoding="utf8", newline="\r\n")
+        s.send(request.encode("utf8"))
+        return s.makefile("rb", encoding="utf8", newline="\r\n")
 
     def _build_request(self):
         request = f"GET {self.path} HTTP/1.1\r\n"

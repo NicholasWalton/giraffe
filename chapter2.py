@@ -24,16 +24,22 @@ class Browser:
         self.canvas = tkinter.Canvas(self.window, width=WIDTH, height=HEIGHT)
 
     def load(self, url):
-        # self.canvas.create_rectangle(10, 20, 400, 300)
-        # self.canvas.create_oval(100, 100, 150, 150)
-        # self.canvas.create_text(200, 150, text="Hi!")
-        cursor_x, cursor_y = HSTEP, VSTEP
-        for c in url.load():
-            self.canvas.create_text(cursor_x, cursor_y, tags=c, text=c)
-            cursor_x += HSTEP
-            if cursor_x >= WIDTH - HSTEP:
-                cursor_y += VSTEP
-                cursor_x = HSTEP
+        text = url.load()
+        display_list = layout(text)
+        for (x, y), c in display_list:
+            self.canvas.create_text(x, y, tags=c, text=c)
+
+
+def layout(text):
+    display_list = []
+    cursor_x, cursor_y = HSTEP, VSTEP
+    for c in text:
+        display_list.append(((cursor_x, cursor_y), c))
+        cursor_x += HSTEP
+        if cursor_x >= WIDTH - HSTEP:
+            cursor_y += VSTEP
+            cursor_x = HSTEP
+    return display_list
 
 
 if __name__ == '__main__':
