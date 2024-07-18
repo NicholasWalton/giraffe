@@ -4,10 +4,10 @@ import chapter2
 from chapter1 import URL
 from chapter2 import Browser
 
+HSTEP, VSTEP = 13, 18
 SCROLL_AMOUNT = 10
-
-LINE_WIDTH_IN_CHARACTERS = 800 // 13 - 1
-ORIGIN = (13.0, 18.0)
+LINE_WIDTH_IN_CHARACTERS = 800 // HSTEP - 1
+ORIGIN = (HSTEP, VSTEP)
 
 
 # while browser.window.dooneevent(ALL_EVENTS | DONT_WAIT):
@@ -33,11 +33,11 @@ def test_text_displayed(browser):
 
 def test_text_marches(layout):
     assert layout[0] == (ORIGIN, 'A')
-    assert layout[1] == ((26.0, ORIGIN[1]), 'B')
+    assert layout[1] == ((ORIGIN[0] + HSTEP, ORIGIN[1]), 'B')
 
 
 def test_text_wraps(layout):
-    assert layout[-1] == ((ORIGIN[0], 36.0), 'C')
+    assert layout[-1] == ((ORIGIN[0], ORIGIN[1] + VSTEP), 'C')
 
 
 def test_scrolled(browser):
@@ -82,7 +82,7 @@ def test_scroll_off_top(browser):
 
 
 def test_skip_offscreen(browser):
-    scroll = 19.0
+    scroll = VSTEP + 1
     browser.scroll = scroll
     assert browser._is_offscreen(0)
     assert not browser._is_offscreen(1)  # only bottom pixel will be visible
@@ -92,4 +92,4 @@ def test_skip_offscreen(browser):
 
 def test_newline():
     layout = chapter2.layout("\nC")
-    assert layout[0] == ((ORIGIN[0], 45.0), 'C')
+    assert layout[0] == ((ORIGIN[0], ORIGIN[1] + 1.5 * VSTEP), 'C')
