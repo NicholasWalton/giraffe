@@ -1,3 +1,5 @@
+import logging
+import time
 import tkinter
 
 from chapter1 import URL
@@ -33,8 +35,23 @@ class Browser:
 
     def draw(self):
         self.canvas.delete("all")
+        character_count = 0
+        frame_start = time.perf_counter()
         for (x, y), c in self.display_list:
-            self.canvas.create_text(x, y - self.scroll, tags=c, text=c)
+            if not self._is_offscreen(y):
+                self.canvas.create_text(x, y - self.scroll, tags=c, text=c)
+                character_count += 1
+        frame_end = time.perf_counter()
+        frame_ms = (frame_end - frame_start) * 1000
+        logging.info(f"Drew {character_count} characters in {frame_ms} ms")
+
+    def _should_draw(self, y):
+        # return self.scroll <= y + VSTEP and y <= self.scroll + HEIGHT
+        return not self._is_offscreen(y)
+    
+    def _is_offscreen(self, y):
+        return y > self.scroll + HEIGHT or y + VSTEP < self.scroll
+    
 
     def scrolldown(self, e):
         self.scroll += 10
