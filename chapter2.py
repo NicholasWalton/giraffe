@@ -26,7 +26,10 @@ class Browser:
         self.canvas = tkinter.Canvas(self.window, width=WIDTH, height=HEIGHT)
         self.display_list = []
         self.scroll = 0
-        self.window.bind("<Down>", self.scrolldown)
+        self.window.bind("<Down>", self.scroll_down)
+        self.window.bind("<Up>", self.scroll_up)
+        self.window.bind("<MouseWheel>", self.scroll_wheel)
+        self.canvas.pack()
 
     def load(self, url):
         text = url.load()
@@ -52,8 +55,18 @@ class Browser:
     def _is_offscreen(self, y):
         return y > self.scroll + HEIGHT or y + VSTEP < self.scroll
 
-    def scrolldown(self, e):
-        self.scroll += 10
+    def scroll_down(self, _):
+        self._scroll(10)
+
+    def scroll_up(self, _):
+        self._scroll(-10)
+
+    def scroll_wheel(self, event):
+        self._scroll(event.delta)
+
+    def _scroll(self, amount):
+        self.scroll += amount
+        self.scroll = max(0, self.scroll)
         self.draw()
 
 

@@ -47,11 +47,38 @@ def test_scrolled(browser):
     assert browser.canvas.coords('A') == [ORIGIN[0], ORIGIN[1] - SCROLL_AMOUNT]
 
 
-def test_scrolldown(browser):
+def test_scroll_down(browser):
     assert browser.scroll == 0
-    browser.window.update()  # required for tkinter to process events at all, apparently
-    browser.window.event_generate("<Down>")
+    assert "scroll_down" in browser.window.bind('<Down>')  # Not ideal but Tkinter is not test-friendly
+    browser.scroll_down(None)
     assert browser.scroll == SCROLL_AMOUNT
+
+
+def test_scroll_up(browser):
+    assert browser.scroll == 0
+    assert "scroll_up" in browser.window.bind('<Up>')  # Not ideal but Tkinter is not test-friendly
+    browser.scroll = SCROLL_AMOUNT
+    browser.scroll_up(None)
+    assert browser.scroll == 0
+
+
+def test_scroll_wheel(browser):
+    expected = 123
+    assert browser.scroll == 0
+    assert "scroll_wheel" in browser.window.bind('<MouseWheel>')  # Not ideal but Tkinter is not test-friendly
+
+    class MockEvent:
+        def __init__(self):
+            self.delta = expected
+
+    browser.scroll_wheel(MockEvent())
+    assert browser.scroll == expected
+
+
+def test_scroll_off_top(browser):
+    assert browser.scroll == 0
+    browser.scroll_up(None)
+    assert browser.scroll == 0
 
 
 def test_skip_offscreen(browser):
@@ -66,4 +93,3 @@ def test_skip_offscreen(browser):
 def test_newline():
     layout = chapter2.layout("\nC")
     assert layout[0] == ((ORIGIN[0], 45.0), 'C')
-
