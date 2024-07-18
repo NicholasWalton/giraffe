@@ -58,6 +58,12 @@ def test_skip_offscreen(browser):
     scroll = 19.0
     browser.scroll = scroll
     assert browser._is_offscreen(0)
-    assert not browser._is_offscreen(1) # only bottom pixel will be visible
-    assert not browser._is_offscreen(chapter2.HEIGHT + scroll) # only top pixel will be visible
+    assert not browser._is_offscreen(1)  # only bottom pixel will be visible
+    assert not browser._is_offscreen(chapter2.HEIGHT + scroll)  # only top pixel will be visible
     assert browser._is_offscreen(chapter2.HEIGHT + scroll + 1)
+
+
+def test_newline():
+    layout = chapter2.layout("\nC")
+    assert layout[0] == ((ORIGIN[0], 45.0), 'C')
+

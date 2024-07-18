@@ -48,10 +48,9 @@ class Browser:
     def _should_draw(self, y):
         # return self.scroll <= y + VSTEP and y <= self.scroll + HEIGHT
         return not self._is_offscreen(y)
-    
+
     def _is_offscreen(self, y):
         return y > self.scroll + HEIGHT or y + VSTEP < self.scroll
-    
 
     def scrolldown(self, e):
         self.scroll += 10
@@ -62,6 +61,10 @@ def layout(text):
     display_list = []
     cursor_x, cursor_y = HSTEP, VSTEP
     for c in text:
+        if c == '\n':
+            cursor_y += 1.5 * VSTEP
+            cursor_x = HSTEP
+            continue
         display_list.append(((cursor_x, cursor_y), c))
         cursor_x += HSTEP
         if cursor_x >= WIDTH - HSTEP:
