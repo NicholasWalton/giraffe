@@ -6,6 +6,8 @@ import sys
 from enum import StrEnum, auto
 from pprint import pformat
 
+MAX_REDIRECTS = 10
+
 DEFAULT_PAGE = "file://./example1-simple.html"
 
 
@@ -20,9 +22,12 @@ _sockets = {}
 
 
 class URL:
-    def __init__(self, url):
+    def __init__(self, url=DEFAULT_PAGE, redirect_count=0):
+        if redirect_count >= MAX_REDIRECTS:
+            raise TooManyRedirects
         self._headers = {}
         self._encoding = "utf-8"
+        self._redirect_count = redirect_count
 
         if url.startswith("view-source:"):
             self.renderer = SourceRenderer
@@ -113,7 +118,7 @@ class URL:
             redirect_url = self._headers['location']
             if redirect_url.startswith('/'):
                 redirect_url = self._root + redirect_url
-            self.__init__(redirect_url)
+            self.__init__(redirect_url, self._redirect_count + 1)
         return redirect
 
     def _parse_body(self, response):
@@ -213,6 +218,10 @@ def parse_entity(entity):
 
 def _debug(*args, **kwargs):
     print(*args, **kwargs, file=sys.stderr)
+
+
+class TooManyRedirects(Exception):
+    pass
 
 
 def main():

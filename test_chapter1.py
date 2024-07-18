@@ -4,7 +4,7 @@ from io import BytesIO
 import pytest
 
 import chapter1
-from chapter1 import URL, parse_entity
+from chapter1 import URL, parse_entity, TooManyRedirects
 
 EMPTY_HTML = "<!doctype html>\r\n<html>\r\n</html>\r\n"
 EXAMPLE_URL = "http://example.org/index.html"
@@ -163,15 +163,18 @@ noise
 
 def test_no_redirect(example_url, fake_response):
     assert not example_url._redirect(fake_response)
+    assert example_url._redirect_count == 0
 
 
 def test_redirect(example_url):
     expected_path = "/local_mirror/redirect.html"
     fake_response = _redirect(f"file://{expected_path}")
     assert example_url.path != expected_path
+
     assert example_url._redirect(fake_response)
     assert example_url.path == expected_path
     assert example_url.scheme == chapter1.Scheme.file
+    assert example_url._redirect_count == 1
 
 
 def test_relative_redirect(example_url):
@@ -180,6 +183,14 @@ def test_relative_redirect(example_url):
     assert example_url.path != expected_path
     assert example_url._redirect(fake_response)
     assert example_url.path == expected_path
+
+
+def test_too_many_redirects():
+    fake_response = _redirect("/")
+    max_redirects = 10
+    example_url = URL(EXAMPLE_URL, max_redirects - 1)
+    with pytest.raises(TooManyRedirects):
+        example_url._redirect(fake_response)
 
 
 def _redirect(location):
