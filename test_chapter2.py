@@ -15,7 +15,7 @@ ORIGIN = (HSTEP, VSTEP)
 
 @pytest.fixture
 def browser():
-    url = URL("data:text/html,A")
+    url = URL("data:text/html,AB")
     browser = Browser()
     browser.load(url)
     return browser
@@ -93,3 +93,18 @@ def test_skip_offscreen(browser):
 def test_newline():
     layout = chapter2.layout("\nC")
     assert layout[0] == ((ORIGIN[0], ORIGIN[1] + 1.5 * VSTEP), 'C')
+
+
+def test_resize(browser):
+    assert "resize" in browser.window.bind('<Configure>')  # Not ideal but Tkinter is not test-friendly
+
+    assert browser.display_list[1] == ((ORIGIN[0] + HSTEP, ORIGIN[1]), 'B')
+
+    class MockEvent:
+        def __init__(self):
+            self.width = HSTEP  # one character wide
+            self.height = 400
+
+    browser.resize(MockEvent())
+    assert browser.display_list[1] == ((ORIGIN[0], ORIGIN[1] + VSTEP), 'B')
+    assert browser.height == 400

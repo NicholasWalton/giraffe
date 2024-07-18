@@ -1,6 +1,7 @@
 import logging
 import time
 import tkinter
+from tkinter import BOTH
 
 from chapter1 import URL
 
@@ -23,17 +24,19 @@ def main():
 class Browser:
     def __init__(self):
         self.window = tkinter.Tk()
-        self.canvas = tkinter.Canvas(self.window, width=WIDTH, height=HEIGHT)
+        self.height = HEIGHT
+        self.canvas = tkinter.Canvas(self.window, width=WIDTH, height=self.height)
         self.display_list = []
         self.scroll = 0
         self.window.bind("<Down>", self.scroll_down)
         self.window.bind("<Up>", self.scroll_up)
         self.window.bind("<MouseWheel>", self.scroll_wheel)
-        self.canvas.pack()
+        self.window.bind("<Configure>", self.resize)
+        self.canvas.pack(fill=BOTH, expand=1)
 
     def load(self, url):
-        text = url.load()
-        self.display_list = layout(text)
+        self.text = url.load()
+        self.display_list = layout(self.text)
         self.draw()
 
     def draw(self):
@@ -53,7 +56,7 @@ class Browser:
         return not self._is_offscreen(y)
 
     def _is_offscreen(self, y):
-        return y > self.scroll + HEIGHT or y + VSTEP < self.scroll
+        return y > self.scroll + self.height or y + VSTEP < self.scroll
 
     def scroll_down(self, _):
         self._scroll(10)
@@ -69,8 +72,13 @@ class Browser:
         self.scroll = max(0, self.scroll)
         self.draw()
 
+    def resize(self, event):
+        self.height = event.height
+        self.display_list = layout(self.text, event.width)
+        self.draw()
 
-def layout(text):
+
+def layout(text, width=WIDTH):
     display_list = []
     cursor_x, cursor_y = HSTEP, VSTEP
     for c in text:
@@ -80,7 +88,7 @@ def layout(text):
             continue
         display_list.append(((cursor_x, cursor_y), c))
         cursor_x += HSTEP
-        if cursor_x >= WIDTH - HSTEP:
+        if cursor_x >= width - HSTEP:
             cursor_y += VSTEP
             cursor_x = HSTEP
     return display_list
