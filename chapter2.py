@@ -22,11 +22,15 @@ class Browser:
     def __init__(self):
         self.window = tkinter.Tk()
         self.canvas = tkinter.Canvas(self.window, width=WIDTH, height=HEIGHT)
+        self.display_list = []
 
     def load(self, url):
         text = url.load()
-        display_list = layout(text)
-        for (x, y), c in display_list:
+        self.display_list = layout(text)
+        self.draw()
+
+    def draw(self):
+        for (x, y), c in self.display_list:
             self.canvas.create_text(x, y, tags=c, text=c)
 
 

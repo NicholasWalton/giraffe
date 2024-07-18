@@ -10,10 +10,6 @@ ORIGIN = (13.0, 18.0)
 
 @pytest.fixture
 def browser():
-    return _browser()
-
-
-def _browser():
     url = URL("data:text/html,A")
     browser = Browser()
     browser.load(url)
