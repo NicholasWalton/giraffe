@@ -23,6 +23,8 @@ class Browser:
         self.window = tkinter.Tk()
         self.canvas = tkinter.Canvas(self.window, width=WIDTH, height=HEIGHT)
         self.display_list = []
+        self.scroll = 0
+        self.window.bind("<Down>", self.scrolldown)
 
     def load(self, url):
         text = url.load()
@@ -30,8 +32,13 @@ class Browser:
         self.draw()
 
     def draw(self):
+        self.canvas.delete("all")
         for (x, y), c in self.display_list:
-            self.canvas.create_text(x, y, tags=c, text=c)
+            self.canvas.create_text(x, y - self.scroll, tags=c, text=c)
+
+    def scrolldown(self, e):
+        self.scroll += 10
+        self.draw()
 
 
 def layout(text):
