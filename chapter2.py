@@ -1,6 +1,7 @@
 import logging
 import time
 import tkinter
+import tkinter.font
 from tkinter import BOTH
 from typing import override
 
@@ -97,6 +98,7 @@ class Browser(HeadlessBrowser):
 
 
 def layout(text, width=WIDTH):
+    font = tkinter.font.Font()
     display_list = []
     cursor_x, cursor_y = HSTEP, VSTEP
     for c in text:
@@ -104,10 +106,11 @@ def layout(text, width=WIDTH):
             cursor_y += 1.5 * VSTEP
             cursor_x = HSTEP
             continue
+        w = font.measure(c)
         display_list.append(((cursor_x, cursor_y), c))
-        cursor_x += HSTEP
-        if cursor_x >= width - HSTEP:
-            cursor_y += VSTEP
+        cursor_x += w
+        if cursor_x + w >= width - HSTEP:
+            cursor_y += font.metrics("linespace") * 1.25
             cursor_x = HSTEP
     return display_list
 

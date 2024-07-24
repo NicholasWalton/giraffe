@@ -1,13 +1,14 @@
+
 import pytest
 
 import chapter2
 from chapter1 import URL
 
-HSTEP, VSTEP = 13, 18
+HSTEP, VSTEP = 11, 18
 SCROLL_AMOUNT = 10
-LINE_WIDTH_IN_CHARACTERS = 800 // HSTEP - 1
-ORIGIN = (HSTEP, VSTEP)
+ORIGIN = (13, 18)
 
+LINE_HEIGHT = 22.5
 
 @pytest.fixture
 def sample_url():
@@ -19,11 +20,6 @@ def browser(sample_url):
     browser = chapter2.HeadlessBrowser()
     browser.load(sample_url)
     return browser
-
-
-@pytest.fixture
-def layout():
-    return chapter2.layout("AB" + " " * (LINE_WIDTH_IN_CHARACTERS - 2) + "C")
 
 
 def test_tk_browser(sample_url):
@@ -50,13 +46,19 @@ def test_tk_browser(sample_url):
     #     print('.')
 
 
-def test_text_marches(layout):
+def test_text_marches():
+    layout = chapter2.layout("AB")
     assert layout[0] == (ORIGIN, 'A')
     assert layout[1] == ((ORIGIN[0] + HSTEP, ORIGIN[1]), 'B')
 
 
-def test_text_wraps(layout):
-    assert layout[-1] == ((ORIGIN[0], ORIGIN[1] + VSTEP), 'C')
+@pytest.mark.parametrize("fudge_factor", range(13, 19))
+def test_text_wraps(fudge_factor):
+    space_width = 4
+    ab_width = 22
+    spaces_to_end_of_line = (800 - ORIGIN[0] - ab_width - fudge_factor) // space_width
+    layout = chapter2.layout("AB" + " " * spaces_to_end_of_line + "C")
+    assert layout[-1] == ((ORIGIN[0], ORIGIN[1] + LINE_HEIGHT), 'C')
 
 
 def test_scroll_down(browser):
@@ -113,5 +115,5 @@ def test_resize(browser):
             self.height = 400
 
     browser.resize(MockEvent())
-    assert browser.display_list[1] == ((ORIGIN[0], ORIGIN[1] + VSTEP), 'B')
+    assert browser.display_list[1] == ((ORIGIN[0], ORIGIN[1] + LINE_HEIGHT), 'B')
     assert browser.height == 400
