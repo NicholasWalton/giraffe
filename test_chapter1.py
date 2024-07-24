@@ -80,11 +80,11 @@ def test_parse_response(example_url, fake_response):
 
 
 def test_show_empty(example_url):
-    assert example_url.show(EMPTY_HTML) == "\r\n\r\n\r\n"
+    assert example_url.lex(EMPTY_HTML) == "\r\n\r\n\r\n"
 
 
 def test_show_content(example_url):
-    assert example_url.show("<html><body>content</body></html>") == "content"
+    assert example_url.lex("<html><body>content</body></html>") == "content"
 
 
 def test_https_default_port():

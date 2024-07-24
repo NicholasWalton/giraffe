@@ -30,9 +30,9 @@ class URL:
         self._redirect_count = redirect_count
 
         if url.startswith("view-source:"):
-            self.renderer = SourceRenderer
+            self.lexer = IdentityLexer
         else:
-            self.renderer = HtmlRenderer
+            self.lexer = HtmlLexer
         url = url.removeprefix("view-source:")
         scheme, url = url.split(":", 1)
         self.scheme = Scheme[scheme]
@@ -155,36 +155,36 @@ class URL:
 
     def load(self):
         body = self.request()
-        rendered = self.show(body)
+        lexed = self.lex(body)
 
         if self._headers.get("connection") == "close":
             _debug(f"Closing socket for {self._address}")
             _sockets.pop((self._address, self.scheme)).close()
         else:
             _debug(f"Headers were [{self._headers}]")
-        return rendered
+        return lexed
 
-    def show(self, body):
-        return self.renderer(body).render()
+    def lex(self, body):
+        return self.lexer(body).lex()
 
 
-class SourceRenderer:
+class IdentityLexer:
     def __init__(self, body):
         self.body = body
 
-    def render(self):
+    def lex(self):
         return self.body
 
 
-class HtmlRenderer:
+class HtmlLexer:
     def __init__(self, body):
         self.in_tag = False
-        self.rendered = []
+        self.lexed = []
         self.entity = ""
         self.in_entity = False
         self.body = body
 
-    def render(self):
+    def lex(self):
         for c in self.body:
             if c == "<":
                 self.in_tag = True
@@ -193,7 +193,7 @@ class HtmlRenderer:
             elif not self.in_tag:
                 self._process_character_outside_tag(c)
         self.body = ""
-        return "".join(self.rendered)
+        return "".join(self.lexed)
 
     def _process_character_outside_tag(self, c):
         if c == "&":
@@ -201,11 +201,11 @@ class HtmlRenderer:
         if self.in_entity:
             self.entity += c
             if c == ";":
-                self.rendered.append(parse_entity(self.entity))
+                self.lexed.append(parse_entity(self.entity))
                 self.entity = ""
                 self.in_entity = False
         else:
-            self.rendered.append(c)
+            self.lexed.append(c)
 
 
 def parse_entity(entity):
@@ -230,8 +230,8 @@ def main():
     if len(sys.argv) <= 1:
         sys.argv.append(DEFAULT_PAGE)
     for requested_url_string in sys.argv[1:]:
-        rendered = URL(requested_url_string).load()
-        encoded = rendered.encode("utf-8")  # Prevent UnicodeEncodeError when a PowerShell pipe implies cp1252
+        lexed = URL(requested_url_string).load()
+        encoded = lexed.encode("utf-8")  # Prevent UnicodeEncodeError when a PowerShell pipe implies cp1252
         print(encoded)
 
 
