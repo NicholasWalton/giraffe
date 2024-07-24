@@ -2,6 +2,7 @@ import logging
 import time
 import tkinter
 from tkinter import BOTH
+from typing import override
 
 from chapter1 import URL
 
@@ -22,18 +23,11 @@ def main():
     tkinter.mainloop()
 
 
-class Browser:
+class HeadlessBrowser:
     def __init__(self):
-        self.window = tkinter.Tk()
         self.height = HEIGHT
-        self.canvas = tkinter.Canvas(self.window, width=WIDTH, height=self.height)
         self.display_list = []
         self.scroll = 0
-        self.window.bind("<Down>", self.scroll_down)
-        self.window.bind("<Up>", self.scroll_up)
-        self.window.bind("<MouseWheel>", self.scroll_wheel)
-        self.window.bind("<Configure>", self.resize)
-        self.canvas.pack(fill=BOTH, expand=1)
 
     def load(self, url):
         self.text = url.load()
@@ -41,23 +35,25 @@ class Browser:
         self.draw()
 
     def draw(self):
-        self.canvas.delete("all")
         character_count = 0
         frame_start = time.perf_counter()
         for (x, y), c in self.display_list:
             if not self._is_offscreen(y):
-                self.canvas.create_text(x, y - self.scroll, tags=c, text=c)
+                self.create_text(x, y - self.scroll, c)
                 character_count += 1
         frame_end = time.perf_counter()
         frame_ms = (frame_end - frame_start) * 1000
         logging.info(f"Drew {character_count} characters in {frame_ms:.1f} ms")
+
+    def create_text(self, x, y, c):
+        logging.debug(f"Pretending to draw [{c}] at {x},{y}")
 
     def _should_draw(self, y):
         # return self.scroll <= y + VSTEP and y <= self.scroll + HEIGHT
         return not self._is_offscreen(y)
 
     def _is_offscreen(self, y):
-        return y > self.scroll + self.height or y + VSTEP < self.scroll
+        return (self.scroll + self.height) < y or y < (self.scroll - VSTEP)
 
     def scroll_down(self, _):
         self._scroll(10)
@@ -77,6 +73,27 @@ class Browser:
         self.height = event.height
         self.display_list = layout(self.text, event.width)
         self.draw()
+
+
+class Browser(HeadlessBrowser):
+    def __init__(self):
+        super().__init__()
+        self.window = tkinter.Tk()
+        self.canvas = tkinter.Canvas(self.window, width=WIDTH, height=self.height)
+        self.window.bind("<Down>", self.scroll_down)
+        self.window.bind("<Up>", self.scroll_up)
+        self.window.bind("<MouseWheel>", self.scroll_wheel)
+        self.window.bind("<Configure>", self.resize)
+        self.canvas.pack(fill=BOTH, expand=1)
+
+    @override
+    def draw(self):
+        self.canvas.delete("all")
+        super().draw()
+
+    @override
+    def create_text(self, x, y, c):
+        self.canvas.create_text(x, y, tags=c, text=c)
 
 
 def layout(text, width=WIDTH):

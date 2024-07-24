@@ -2,7 +2,6 @@ import pytest
 
 import chapter2
 from chapter1 import URL
-from chapter2 import Browser
 
 HSTEP, VSTEP = 13, 18
 SCROLL_AMOUNT = 10
@@ -10,14 +9,15 @@ LINE_WIDTH_IN_CHARACTERS = 800 // HSTEP - 1
 ORIGIN = (HSTEP, VSTEP)
 
 
-# while browser.window.dooneevent(ALL_EVENTS | DONT_WAIT):
-#     print('.')
+@pytest.fixture
+def sample_url():
+    return URL("data:text/html,AB")
+
 
 @pytest.fixture
-def browser():
-    url = URL("data:text/html,AB")
-    browser = Browser()
-    browser.load(url)
+def browser(sample_url):
+    browser = chapter2.HeadlessBrowser()
+    browser.load(sample_url)
     return browser
 
 
@@ -26,9 +26,28 @@ def layout():
     return chapter2.layout("AB" + " " * (LINE_WIDTH_IN_CHARACTERS - 2) + "C")
 
 
-def test_text_displayed(browser):
+def test_tk_browser(sample_url):
+    browser = chapter2.Browser()
+    browser.load(sample_url)
+
+    ## text_displayed
     assert browser.window.children == {'!canvas': browser.canvas}
     assert browser.canvas.itemcget('A', 'text') == 'A'
+
+    ## bindings
+    assert "scroll_down" in browser.window.bind('<Down>')  # Not ideal but Tkinter is not test-friendly
+    assert "scroll_up" in browser.window.bind('<Up>')  # Not ideal but Tkinter is not test-friendly
+    assert "scroll_wheel" in browser.window.bind('<MouseWheel>')  # Not ideal but Tkinter is not test-friendly
+    assert "resize" in browser.window.bind('<Configure>')  # Not ideal but Tkinter is not test-friendly
+
+    ## scrolled
+    assert browser.scroll == 0
+    browser.scroll = SCROLL_AMOUNT
+    browser.draw()
+    assert browser.canvas.coords('A') == [ORIGIN[0], ORIGIN[1] - SCROLL_AMOUNT]
+
+    # while browser.window.dooneevent(ALL_EVENTS | DONT_WAIT):
+    #     print('.')
 
 
 def test_text_marches(layout):
@@ -40,23 +59,14 @@ def test_text_wraps(layout):
     assert layout[-1] == ((ORIGIN[0], ORIGIN[1] + VSTEP), 'C')
 
 
-def test_scrolled(browser):
-    assert browser.scroll == 0
-    browser.scroll = SCROLL_AMOUNT
-    browser.draw()
-    assert browser.canvas.coords('A') == [ORIGIN[0], ORIGIN[1] - SCROLL_AMOUNT]
-
-
 def test_scroll_down(browser):
     assert browser.scroll == 0
-    assert "scroll_down" in browser.window.bind('<Down>')  # Not ideal but Tkinter is not test-friendly
     browser.scroll_down(None)
     assert browser.scroll == SCROLL_AMOUNT
 
 
 def test_scroll_up(browser):
     assert browser.scroll == 0
-    assert "scroll_up" in browser.window.bind('<Up>')  # Not ideal but Tkinter is not test-friendly
     browser.scroll = SCROLL_AMOUNT
     browser.scroll_up(None)
     assert browser.scroll == 0
@@ -65,7 +75,6 @@ def test_scroll_up(browser):
 def test_scroll_wheel(browser):
     expected = 123
     assert browser.scroll == 0
-    assert "scroll_wheel" in browser.window.bind('<MouseWheel>')  # Not ideal but Tkinter is not test-friendly
 
     class MockEvent:
         def __init__(self):
@@ -96,8 +105,6 @@ def test_newline():
 
 
 def test_resize(browser):
-    assert "resize" in browser.window.bind('<Configure>')  # Not ideal but Tkinter is not test-friendly
-
     assert browser.display_list[1] == ((ORIGIN[0] + HSTEP, ORIGIN[1]), 'B')
 
     class MockEvent:
