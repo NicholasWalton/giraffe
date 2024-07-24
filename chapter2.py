@@ -8,7 +8,7 @@ from typing import override
 from chapter1 import URL, Text
 
 WIDTH, HEIGHT = 800, 600
-HSTEP, VSTEP = 13, 18
+HMARGIN, VMARGIN = 13, 18
 
 
 def main():
@@ -25,17 +25,18 @@ def main():
 
 
 class FakeFont:
+    HSTEP, VSTEP = 17, 23
     @staticmethod
     def metrics(name):
         match name:
             case "linespace":
-                return VSTEP
+                return FakeFont.VSTEP
             case _:
                 raise ValueError()
 
     @staticmethod
     def measure(word):
-        return HSTEP * len(word)
+        return FakeFont.HSTEP * len(word)
 
 
 class HeadlessBrowser:
@@ -51,25 +52,24 @@ class HeadlessBrowser:
         self.draw()
 
     def draw(self):
-        character_count = 0
+        words = 0
         frame_start = time.perf_counter()
-        for (x, y), c in self.display_list:
+        for (x, y), word in self.display_list:
             if not self._is_offscreen(y):
-                self.create_text(x, y - self.scroll, c)
-                character_count += 1
+                self.create_text(x, y - self.scroll, word)
+                words += 1
         frame_end = time.perf_counter()
         frame_ms = (frame_end - frame_start) * 1000
-        logging.info(f"Drew {character_count} characters in {frame_ms:.1f} ms")
+        logging.info(f"Drew {words} words in {frame_ms:.1f} ms")
 
-    def create_text(self, x, y, c):
-        logging.debug(f"Pretending to draw [{c}] at {x},{y}")
+    def create_text(self, x, y, word):
+        logging.debug(f"Pretending to draw [{word}] at {x},{y}")
 
     def _should_draw(self, y):
-        # return self.scroll <= y + VSTEP and y <= self.scroll + HEIGHT
         return not self._is_offscreen(y)
 
     def _is_offscreen(self, y):
-        return (self.scroll + self.height) < y or y < (self.scroll - VSTEP)
+        return (self.scroll + self.height) < y or y < (self.scroll - VMARGIN)
 
     def scroll_down(self, _):
         self._scroll(10)
@@ -109,13 +109,13 @@ class Browser(HeadlessBrowser):
         super().draw()
 
     @override
-    def create_text(self, x, y, c):
-        self.canvas.create_text(x, y, text=c, font=self.font, anchor='nw', tag=c)
+    def create_text(self, x, y, word):
+        self.canvas.create_text(x, y, text=word, font=self.font, anchor='nw', tag=word)
 
 
 class Layout(list):
     def __init__(self, tokens, font=FakeFont(), width=WIDTH):
-        self.cursor_x, self.cursor_y = HSTEP, VSTEP
+        self.cursor_x, self.cursor_y = HMARGIN, VMARGIN
         self.font = font
         self.width = width
         for token in tokens:
@@ -127,13 +127,13 @@ class Layout(list):
             for word in line.split():
                 self._layout_word(word)
             self.cursor_y += 1.5 * self.font.metrics("linespace")
-            self.cursor_x = HSTEP
+            self.cursor_x = HMARGIN
 
     def _layout_word(self, word):
         w = self.font.measure(word)
-        if self.cursor_x + w > self.width - HSTEP:
+        if self.cursor_x + w > self.width - HMARGIN:
             self.cursor_y += 1.25 * self.font.metrics("linespace")
-            self.cursor_x = HSTEP
+            self.cursor_x = HMARGIN
         self.append(((self.cursor_x, self.cursor_y), word))
         self.cursor_x += w + self.font.measure(" ")
 

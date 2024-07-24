@@ -3,9 +3,9 @@ import pytest
 import chapter2
 from chapter1 import URL, Text
 
-HSTEP, VSTEP = 13, 18
+HSTEP, VSTEP = 17, 23
 SCROLL_AMOUNT = 10
-ORIGIN = (HSTEP, VSTEP)
+ORIGIN = (13, 18)
 LINE_HEIGHT = 1.25 * VSTEP
 
 
@@ -89,7 +89,7 @@ def test_scroll_off_top(browser):
 
 
 def test_skip_offscreen(browser):
-    scroll = VSTEP + 1
+    scroll = chapter2.VMARGIN + 1
     browser.scroll = scroll
     assert browser._is_offscreen(0)
     assert not browser._is_offscreen(1)  # only bottom pixel will be visible
