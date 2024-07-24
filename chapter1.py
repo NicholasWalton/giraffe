@@ -184,44 +184,43 @@ class IdentityLexer:
 
 class HtmlLexer:
     def __init__(self, body):
-        self.in_tag = False
         self.tokens = []
-        self.buffer = ""
         self.entity = ""
-        self.in_entity = False
         self.body = body
 
     def lex(self):
+        buffer = ""
+        in_tag = False
         for c in self.body:
             if c == "<":
-                self.in_tag = True
-                if self.buffer:
-                    self.tokens.append(Text(self.buffer))
-                self.buffer = ""
+                in_tag = True
+                if buffer:
+                    self.tokens.append(Text(buffer))
+                buffer = ""
             elif c == ">":
-                self.in_tag = False
-                self.tokens.append(Tag(self.buffer))
-                self.buffer = ""
+                in_tag = False
+                self.tokens.append(Tag(buffer))
+                buffer = ""
             else:
-                self._process_character_outside_tag(c)
+                buffer += self._process_character_outside_tag(c)
         if self.entity:
-            self.buffer += self.entity
-        if not self.in_tag and self.buffer:
-            self.tokens.append(Text(self.buffer))
+            buffer += self.entity
+        if not in_tag and buffer:
+            self.tokens.append(Text(buffer))
         self.body = ""
         return self.tokens
 
     def _process_character_outside_tag(self, c):
-        if c == "&":
-            self.in_entity = True
-        if self.in_entity:
+        if c == "&" or self.entity:
             self.entity += c
             if c == ";":
-                self.buffer += parse_entity(self.entity)
+                parsed = parse_entity(self.entity)
                 self.entity = ""
-                self.in_entity = False
+                return parsed
+            else:
+                return ""
         else:
-            self.buffer += c
+            return c
 
 
 def parse_entity(entity):
