@@ -3,6 +3,7 @@ import pathlib
 import socket
 import ssl
 import sys
+from dataclasses import dataclass
 from enum import StrEnum, auto
 from pprint import pformat
 
@@ -10,6 +11,7 @@ MAX_REDIRECTS = 10
 
 DEFAULT_PAGE = "file://./example1-simple.html"
 
+_sockets = {}
 
 class Scheme(StrEnum):
     http = auto()
@@ -18,13 +20,13 @@ class Scheme(StrEnum):
     data = auto()
 
 
-class Text(str):
-    pass
+@dataclass
+class Text:
+    text: str
 
-class Tag(str):
-    pass
-
-_sockets = {}
+@dataclass
+class Tag:
+    tag: str
 
 
 class URL:
@@ -252,7 +254,7 @@ def main():
 
 
 def strip_tags(tokens):
-    return "".join([token for token in tokens if isinstance(token, Text)])
+    return "".join([token.text for token in tokens if isinstance(token, Text)])
 
 
 if __name__ == "__main__":

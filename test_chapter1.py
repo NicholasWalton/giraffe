@@ -4,7 +4,7 @@ from io import BytesIO
 import pytest
 
 import chapter1
-from chapter1 import URL, parse_entity, TooManyRedirects
+from chapter1 import URL, parse_entity, TooManyRedirects, Tag, Text
 
 EMPTY_HTML = "<!doctype html>\r\n<html>\r\n</html>\r\n"
 EXAMPLE_URL = "http://example.org/index.html"
@@ -80,11 +80,13 @@ def test_parse_response(example_url, fake_response):
 
 
 def test_show_empty(example_url):
-    assert chapter1.strip_tags(example_url.lex(EMPTY_HTML)) == "\r\n\r\n\r\n"
+    assert example_url.lex(EMPTY_HTML) == [Tag("!doctype html"), Text("\r\n"), Tag("html"), Text("\r\n"), Tag("/html"),
+                                           Text("\r\n")]
 
 
 def test_show_content(example_url):
-    assert chapter1.strip_tags(example_url.lex("<html><body>content</body></html>")) == "content"
+    assert example_url.lex("<html><body>content</body></html>") == [Tag("html"), Tag("body"), Text("content"),
+                                                                    Tag("/body"), Tag("/html")]
 
 
 def test_https_default_port():
@@ -126,7 +128,7 @@ def test_default_page():
 
 def test_data_scheme():
     url = URL("data:text/html,Hello world!")
-    assert url.load() == ["Hello world!"]
+    assert url.load() == [Text("Hello world!")]
 
 
 def test_entities():
@@ -137,12 +139,12 @@ def test_entities():
 
 def test_entities_in_html():
     url = URL("data:text/html,<http>hello &lt;&unknown;&gt;</http>")
-    assert chapter1.strip_tags(url.load()) == "hello <&unknown;>"
+    assert url.load() == [Tag("http"), Text("hello <&unknown;>"), Tag("/http")]
 
 
 def test_view_source():
     url = URL("view-source:" + chapter1.DEFAULT_PAGE)
-    assert url.load() == [pathlib.Path("./example1-simple.html").read_text()]
+    assert url.load() == [Text(pathlib.Path("./example1-simple.html").read_text())]
 
 
 def test_keep_alive(example_url):
