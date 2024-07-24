@@ -10,6 +10,7 @@ HSTEP, VSTEP = 13, 18
 
 
 def main():
+    logging.basicConfig(level=logging.DEBUG)
     import sys
     browser = Browser()
     if len(sys.argv) > 1:
@@ -49,7 +50,7 @@ class Browser:
                 character_count += 1
         frame_end = time.perf_counter()
         frame_ms = (frame_end - frame_start) * 1000
-        logging.info(f"Drew {character_count} characters in {frame_ms} ms")
+        logging.info(f"Drew {character_count} characters in {frame_ms:.1f} ms")
 
     def _should_draw(self, y):
         # return self.scroll <= y + VSTEP and y <= self.scroll + HEIGHT
