@@ -115,19 +115,27 @@ class Browser(HeadlessBrowser):
 
 class Layout(list):
     def __init__(self, tokens, font=FakeFont(), width=WIDTH):
-        cursor_x, cursor_y = HSTEP, VSTEP
+        self.cursor_x, self.cursor_y = HSTEP, VSTEP
+        self.font = font
+        self.width = width
         for token in tokens:
             if isinstance(token, Text):
-                for line in token.text.split('\n'):
-                    for word in line.split():
-                        w = font.measure(word)
-                        if cursor_x + w > width - HSTEP:
-                            cursor_y += 1.25 * font.metrics("linespace")
-                            cursor_x = HSTEP
-                        self.append(((cursor_x, cursor_y), word))
-                        cursor_x += w + font.measure(" ")
-                    cursor_y += 1.5 * font.metrics("linespace")
-                    cursor_x = HSTEP
+                self._layout_text(token.text)
+
+    def _layout_text(self, text):
+        for line in text.split('\n'):
+            for word in line.split():
+                self._layout_word(word)
+            self.cursor_y += 1.5 * self.font.metrics("linespace")
+            self.cursor_x = HSTEP
+
+    def _layout_word(self, word):
+        w = self.font.measure(word)
+        if self.cursor_x + w > self.width - HSTEP:
+            self.cursor_y += 1.25 * self.font.metrics("linespace")
+            self.cursor_x = HSTEP
+        self.append(((self.cursor_x, self.cursor_y), word))
+        self.cursor_x += w + self.font.measure(" ")
 
 
 if __name__ == '__main__':
