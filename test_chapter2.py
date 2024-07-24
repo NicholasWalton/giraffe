@@ -8,7 +8,7 @@ HSTEP, VSTEP = 11, 18
 SCROLL_AMOUNT = 10
 ORIGIN = (13, 18)
 
-LINE_HEIGHT = 22.5
+LINE_HEIGHT = 22.5  # tkinter.font.Font().metrics("linespace")
 
 @pytest.fixture
 def sample_url():
@@ -52,12 +52,11 @@ def test_text_marches():
     assert layout[1] == ((ORIGIN[0] + HSTEP, ORIGIN[1]), 'B')
 
 
-@pytest.mark.parametrize("fudge_factor", range(13, 19))
+@pytest.mark.parametrize("fudge_factor", range(11, 17))
 def test_text_wraps(fudge_factor):
-    space_width = 4
-    ab_width = 22
-    spaces_to_end_of_line = (800 - ORIGIN[0] - ab_width - fudge_factor) // space_width
-    layout = chapter2.layout("AB" + " " * spaces_to_end_of_line + "C")
+    space_width = 4  # tkinter.font.Font().measure(" ")
+    spaces_to_end_of_line = (800 - ORIGIN[0] - fudge_factor) // space_width
+    layout = chapter2.layout(" " * spaces_to_end_of_line + "C")
     assert layout[-1] == ((ORIGIN[0], ORIGIN[1] + LINE_HEIGHT), 'C')
 
 
