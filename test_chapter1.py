@@ -80,11 +80,11 @@ def test_parse_response(example_url, fake_response):
 
 
 def test_show_empty(example_url):
-    assert example_url.lex(EMPTY_HTML) == "\r\n\r\n\r\n"
+    assert chapter1.strip_tags(example_url.lex(EMPTY_HTML)) == "\r\n\r\n\r\n"
 
 
 def test_show_content(example_url):
-    assert example_url.lex("<html><body>content</body></html>") == "content"
+    assert chapter1.strip_tags(example_url.lex("<html><body>content</body></html>")) == "content"
 
 
 def test_https_default_port():
@@ -119,14 +119,14 @@ def test_default_page():
     body = url.request()
     assert body == pathlib.Path("./example1-simple.html").read_text()
     assert (
-            url.load().strip()
+            chapter1.strip_tags(url.load()).strip()
             == "This is a simple\n    web page with some\n    text in it."
     )
 
 
 def test_data_scheme():
     url = URL("data:text/html,Hello world!")
-    assert url.load() == "Hello world!"
+    assert url.load() == ["Hello world!"]
 
 
 def test_entities():
@@ -137,12 +137,12 @@ def test_entities():
 
 def test_entities_in_html():
     url = URL("data:text/html,<http>hello &lt;&unknown;&gt;</http>")
-    assert url.load() == "hello <&unknown;>"
+    assert chapter1.strip_tags(url.load()) == "hello <&unknown;>"
 
 
 def test_view_source():
     url = URL("view-source:" + chapter1.DEFAULT_PAGE)
-    assert url.load() == pathlib.Path("./example1-simple.html").read_text()
+    assert url.load() == [pathlib.Path("./example1-simple.html").read_text()]
 
 
 def test_keep_alive(example_url):

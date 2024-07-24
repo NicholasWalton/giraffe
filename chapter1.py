@@ -18,6 +18,12 @@ class Scheme(StrEnum):
     data = auto()
 
 
+class Text(str):
+    pass
+
+class Tag(str):
+    pass
+
 _sockets = {}
 
 
@@ -173,13 +179,14 @@ class IdentityLexer:
         self.body = body
 
     def lex(self):
-        return self.body
+        return [Text(self.body)]
 
 
 class HtmlLexer:
     def __init__(self, body):
         self.in_tag = False
-        self.lexed = []
+        self.tokens = []
+        self.buffer = ""
         self.entity = ""
         self.in_entity = False
         self.body = body
@@ -188,12 +195,21 @@ class HtmlLexer:
         for c in self.body:
             if c == "<":
                 self.in_tag = True
+                if self.buffer:
+                    self.tokens.append(Text(self.buffer))
+                self.buffer = ""
             elif c == ">":
                 self.in_tag = False
-            elif not self.in_tag:
+                self.tokens.append(Tag(self.buffer))
+                self.buffer = ""
+            else:
                 self._process_character_outside_tag(c)
+        if self.entity:
+            self.buffer += self.entity
+        if not self.in_tag and self.buffer:
+            self.tokens.append(Text(self.buffer))
         self.body = ""
-        return "".join(self.lexed)
+        return self.tokens
 
     def _process_character_outside_tag(self, c):
         if c == "&":
@@ -201,11 +217,11 @@ class HtmlLexer:
         if self.in_entity:
             self.entity += c
             if c == ";":
-                self.lexed.append(parse_entity(self.entity))
+                self.buffer += parse_entity(self.entity)
                 self.entity = ""
                 self.in_entity = False
         else:
-            self.lexed.append(c)
+            self.buffer += c
 
 
 def parse_entity(entity):
@@ -230,9 +246,14 @@ def main():
     if len(sys.argv) <= 1:
         sys.argv.append(DEFAULT_PAGE)
     for requested_url_string in sys.argv[1:]:
-        lexed = URL(requested_url_string).load()
-        encoded = lexed.encode("utf-8")  # Prevent UnicodeEncodeError when a PowerShell pipe implies cp1252
+        tokens = URL(requested_url_string).load()
+        rendered = strip_tags(tokens)
+        encoded = rendered.encode("utf-8")  # Prevent UnicodeEncodeError when a PowerShell pipe implies cp1252
         print(encoded)
+
+
+def strip_tags(tokens):
+    return "".join([token for token in tokens if isinstance(token, Text)])
 
 
 if __name__ == "__main__":
