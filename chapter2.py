@@ -110,7 +110,7 @@ class Browser(HeadlessBrowser):
 
     @override
     def create_text(self, x, y, c):
-        self.canvas.create_text(x, y, tags=c, text=c)
+        self.canvas.create_text(x, y, text=c, font=self.font, anchor='nw', tag=c)
 
 
 def layout(text, font=FakeFont(), width=WIDTH):
