@@ -44,11 +44,11 @@ class HeadlessBrowser:
         self.height = HEIGHT
         self.display_list = []
         self.scroll = 0
-        self.font = FakeFont()
+        self.fonts = FakeFont
 
     def load(self, url):
         self.text = url.load()
-        self.display_list = Layout(self.text, self.font)
+        self.display_list = Layout(self.text, self.fonts)
         self.draw()
 
     def draw(self):
@@ -87,7 +87,7 @@ class HeadlessBrowser:
 
     def resize(self, event):
         self.height = event.height
-        self.display_list = Layout(self.text, self.font, event.width)
+        self.display_list = Layout(self.text, self.fonts, event.width)
         self.draw()
 
 
@@ -95,7 +95,7 @@ class Browser(HeadlessBrowser):
     def __init__(self):
         super().__init__()
         self.window = tkinter.Tk()
-        self.font = tkinter.font.Font()
+        self.fonts = tkinter.font.Font
         self.canvas = tkinter.Canvas(self.window, width=WIDTH, height=self.height)
         self.window.bind("<Down>", self.scroll_down)
         self.window.bind("<Up>", self.scroll_up)
@@ -110,13 +110,13 @@ class Browser(HeadlessBrowser):
 
     @override
     def create_text(self, x, y, word):
-        self.canvas.create_text(x, y, text=word, font=self.font, anchor='nw', tag=word)
+        self.canvas.create_text(x, y, text=word, font=self.fonts(), anchor='nw', tag=word)
 
 
 class Layout(list):
-    def __init__(self, tokens, font=FakeFont(), width=WIDTH):
+    def __init__(self, tokens, fonts=FakeFont, width=WIDTH):
         self.cursor_x, self.cursor_y = HMARGIN, VMARGIN
-        self.font = font
+        self.font = fonts()
         self.width = width
         for token in tokens:
             if isinstance(token, Text):
