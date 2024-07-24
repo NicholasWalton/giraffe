@@ -5,7 +5,7 @@ import tkinter.font
 from tkinter import BOTH
 from typing import override
 
-from chapter1 import URL
+from chapter1 import URL, Text
 
 WIDTH, HEIGHT = 800, 600
 HSTEP, VSTEP = 13, 18
@@ -113,19 +113,21 @@ class Browser(HeadlessBrowser):
         self.canvas.create_text(x, y, text=c, font=self.font, anchor='nw', tag=c)
 
 
-def layout(text, font=FakeFont(), width=WIDTH):
+def layout(tokens, font=FakeFont(), width=WIDTH):
     display_list = []
     cursor_x, cursor_y = HSTEP, VSTEP
-    for line in text.split('\n'):
-        for word in line.split():
-            w = font.measure(word)
-            if cursor_x + w > width - HSTEP:
-                cursor_y += 1.25 * font.metrics("linespace")
+    for token in tokens:
+        if isinstance(token, Text):
+            for line in token.text.split('\n'):
+                for word in line.split():
+                    w = font.measure(word)
+                    if cursor_x + w > width - HSTEP:
+                        cursor_y += 1.25 * font.metrics("linespace")
+                        cursor_x = HSTEP
+                    display_list.append(((cursor_x, cursor_y), word))
+                    cursor_x += w + font.measure(" ")
+                cursor_y += 1.5 * font.metrics("linespace")
                 cursor_x = HSTEP
-            display_list.append(((cursor_x, cursor_y), word))
-            cursor_x += w + font.measure(" ")
-        cursor_y += 1.5 * font.metrics("linespace")
-        cursor_x = HSTEP
     return display_list
 
 
