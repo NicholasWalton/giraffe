@@ -2,10 +2,13 @@ import logging
 import time
 import tkinter
 import tkinter.font
+from dataclasses import dataclass
 from tkinter import BOTH
 from typing import override
 
 from chapter1 import URL, Text
+
+NORMAL = "normal"
 
 WIDTH, HEIGHT = 800, 600
 HMARGIN, VMARGIN = 13, 18
@@ -24,8 +27,10 @@ def main():
     tkinter.mainloop()
 
 
+@dataclass
 class FakeFont:
     HSTEP, VSTEP = 17, 23
+    weight: str = "normal"
     @staticmethod
     def metrics(name):
         match name:
@@ -54,7 +59,7 @@ class HeadlessBrowser:
     def draw(self):
         words = 0
         frame_start = time.perf_counter()
-        for (x, y), word in self.display_list:
+        for (x, y), word, _ in self.display_list:
             if not self._is_offscreen(y):
                 self.create_text(x, y - self.scroll, word)
                 words += 1
@@ -116,26 +121,34 @@ class Browser(HeadlessBrowser):
 class Layout(list):
     def __init__(self, tokens, fonts=FakeFont, width=WIDTH):
         self.cursor_x, self.cursor_y = HMARGIN, VMARGIN
-        self.font = fonts()
+        self.fonts = fonts
         self.width = width
+        self.weight = NORMAL
         for token in tokens:
             if isinstance(token, Text):
                 self._layout_text(token.text)
+            elif token.tag == "b":
+                self.weight = "bold"
+            elif token.tag == "/b":
+                self.weight = NORMAL
 
     def _layout_text(self, text):
         for line in text.split('\n'):
             for word in line.split():
                 self._layout_word(word)
-            self.cursor_y += 1.5 * self.font.metrics("linespace")
+            self.cursor_y += 1.5 * self._font().metrics("linespace")
             self.cursor_x = HMARGIN
 
     def _layout_word(self, word):
-        w = self.font.measure(word)
+        w = self._font().measure(word)
         if self.cursor_x + w > self.width - HMARGIN:
-            self.cursor_y += 1.25 * self.font.metrics("linespace")
+            self.cursor_y += 1.25 * self._font().metrics("linespace")
             self.cursor_x = HMARGIN
-        self.append(((self.cursor_x, self.cursor_y), word))
-        self.cursor_x += w + self.font.measure(" ")
+        self.append(((self.cursor_x, self.cursor_y), word, self._font()))
+        self.cursor_x += w + self._font().measure(" ")
+    
+    def _font(self):
+        return self.fonts(weight = self.weight)
 
 
 if __name__ == '__main__':

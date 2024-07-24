@@ -1,7 +1,7 @@
 import pytest
 
 import chapter2
-from chapter1 import URL, Text
+from chapter1 import URL, Text, Tag
 
 HSTEP, VSTEP = 17, 23
 SCROLL_AMOUNT = 10
@@ -22,7 +22,7 @@ def browser(sample_url):
 
 
 def assert_text_location(entry, expected_location, expected_text):
-    actual_location, actual_text = entry
+    actual_location, actual_text, _ = entry
     assert (actual_location, actual_text) == (expected_location, expected_text)
 
 
@@ -119,3 +119,10 @@ def test_resize(browser):
     browser.resize(MockEvent())
     assert_text_location(browser.display_list[1], (ORIGIN[0], ORIGIN[1] + LINE_HEIGHT), expected_text)
     assert browser.height == 400
+
+def test_layout_bold():
+    layout = chapter2.Layout([Tag("b"), Text("bolded"), Tag("/b"), Text("normal")])
+    _, text, font = layout[0]
+    assert font == chapter2.FakeFont(weight="bold")
+    _, text, font = layout[1]
+    assert font == chapter2.FakeFont(weight="normal")
