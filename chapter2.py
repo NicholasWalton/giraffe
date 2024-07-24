@@ -47,7 +47,7 @@ class HeadlessBrowser:
 
     def load(self, url):
         self.text = url.load()
-        self.display_list = layout(self.text, self.font)
+        self.display_list = Layout(self.text, self.font)
         self.draw()
 
     def draw(self):
@@ -87,7 +87,7 @@ class HeadlessBrowser:
 
     def resize(self, event):
         self.height = event.height
-        self.display_list = layout(self.text, self.font, event.width)
+        self.display_list = Layout(self.text, self.font, event.width)
         self.draw()
 
 
@@ -113,22 +113,21 @@ class Browser(HeadlessBrowser):
         self.canvas.create_text(x, y, text=c, font=self.font, anchor='nw', tag=c)
 
 
-def layout(tokens, font=FakeFont(), width=WIDTH):
-    display_list = []
-    cursor_x, cursor_y = HSTEP, VSTEP
-    for token in tokens:
-        if isinstance(token, Text):
-            for line in token.text.split('\n'):
-                for word in line.split():
-                    w = font.measure(word)
-                    if cursor_x + w > width - HSTEP:
-                        cursor_y += 1.25 * font.metrics("linespace")
-                        cursor_x = HSTEP
-                    display_list.append(((cursor_x, cursor_y), word))
-                    cursor_x += w + font.measure(" ")
-                cursor_y += 1.5 * font.metrics("linespace")
-                cursor_x = HSTEP
-    return display_list
+class Layout(list):
+    def __init__(self, tokens, font=FakeFont(), width=WIDTH):
+        cursor_x, cursor_y = HSTEP, VSTEP
+        for token in tokens:
+            if isinstance(token, Text):
+                for line in token.text.split('\n'):
+                    for word in line.split():
+                        w = font.measure(word)
+                        if cursor_x + w > width - HSTEP:
+                            cursor_y += 1.25 * font.metrics("linespace")
+                            cursor_x = HSTEP
+                        self.append(((cursor_x, cursor_y), word))
+                        cursor_x += w + font.measure(" ")
+                    cursor_y += 1.5 * font.metrics("linespace")
+                    cursor_x = HSTEP
 
 
 if __name__ == '__main__':

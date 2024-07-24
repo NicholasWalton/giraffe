@@ -46,14 +46,14 @@ def test_tk_browser(sample_url):
 
 
 def test_text_marches():
-    layout = chapter2.layout([Text("A B")])
+    layout = chapter2.Layout([Text("A B")])
     assert layout[0] == (ORIGIN, 'A')
     assert layout[1] == ((ORIGIN[0] + 2 * HSTEP, ORIGIN[1]), 'B')
 
 
 def test_text_wraps():
     characters_to_fill_line = (800 - ORIGIN[0]) // HSTEP - 1
-    layout = chapter2.layout([Text("A" * characters_to_fill_line + " " + "C")])
+    layout = chapter2.Layout([Text("A" * characters_to_fill_line + " " + "C")])
     assert layout[-1] == ((ORIGIN[0], ORIGIN[1] + LINE_HEIGHT), 'C')
 
 
@@ -98,7 +98,7 @@ def test_skip_offscreen(browser):
 
 
 def test_newline():
-    layout = chapter2.layout([Text("\nC")])
+    layout = chapter2.Layout([Text("\nC")])
     assert layout[0] == ((ORIGIN[0], ORIGIN[1] + 1.5 * VSTEP), 'C')
 
 
