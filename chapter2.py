@@ -24,15 +24,30 @@ def main():
     tkinter.mainloop()
 
 
+class FakeFont:
+    @staticmethod
+    def metrics(name):
+        match name:
+            case "linespace":
+                return VSTEP
+            case _:
+                raise ValueError()
+
+    @staticmethod
+    def measure(word):
+        return HSTEP * len(word)
+
+
 class HeadlessBrowser:
     def __init__(self):
         self.height = HEIGHT
         self.display_list = []
         self.scroll = 0
+        self.font = FakeFont()
 
     def load(self, url):
         self.text = url.load()
-        self.display_list = layout(self.text)
+        self.display_list = layout(self.text, self.font)
         self.draw()
 
     def draw(self):
@@ -72,7 +87,7 @@ class HeadlessBrowser:
 
     def resize(self, event):
         self.height = event.height
-        self.display_list = layout(self.text, event.width)
+        self.display_list = layout(self.text, self.font, event.width)
         self.draw()
 
 
@@ -80,6 +95,7 @@ class Browser(HeadlessBrowser):
     def __init__(self):
         super().__init__()
         self.window = tkinter.Tk()
+        self.font = tkinter.font.Font()
         self.canvas = tkinter.Canvas(self.window, width=WIDTH, height=self.height)
         self.window.bind("<Down>", self.scroll_down)
         self.window.bind("<Up>", self.scroll_up)
@@ -97,17 +113,16 @@ class Browser(HeadlessBrowser):
         self.canvas.create_text(x, y, tags=c, text=c)
 
 
-def layout(text, width=WIDTH):
-    font = tkinter.font.Font()
+def layout(text, font=FakeFont(), width=WIDTH):
     display_list = []
     cursor_x, cursor_y = HSTEP, VSTEP
-    for c in text:
-        if c == '\n':
+    for word in text.split(' '):
+        while word.startswith('\n'):
+            word = word.removeprefix('\n')
             cursor_y += 1.5 * VSTEP
             cursor_x = HSTEP
-            continue
-        w = font.measure(c)
-        display_list.append(((cursor_x, cursor_y), c))
+        display_list.append(((cursor_x, cursor_y), word))
+        w = font.measure(word)
         cursor_x += w
         if cursor_x + w >= width - HSTEP:
             cursor_y += font.metrics("linespace") * 1.25

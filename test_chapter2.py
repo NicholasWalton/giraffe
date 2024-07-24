@@ -1,18 +1,17 @@
-
 import pytest
 
 import chapter2
 from chapter1 import URL
 
-HSTEP, VSTEP = 11, 18
+HSTEP, VSTEP = 13, 18
 SCROLL_AMOUNT = 10
-ORIGIN = (13, 18)
+ORIGIN = (HSTEP, VSTEP)
+LINE_HEIGHT = 1.25 * VSTEP
 
-LINE_HEIGHT = 22.5  # tkinter.font.Font().metrics("linespace")
 
 @pytest.fixture
 def sample_url():
-    return URL("data:text/html,AB")
+    return URL("data:text/html,A B")
 
 
 @pytest.fixture
@@ -47,16 +46,14 @@ def test_tk_browser(sample_url):
 
 
 def test_text_marches():
-    layout = chapter2.layout("AB")
+    layout = chapter2.layout("A B")
     assert layout[0] == (ORIGIN, 'A')
     assert layout[1] == ((ORIGIN[0] + HSTEP, ORIGIN[1]), 'B')
 
 
-@pytest.mark.parametrize("fudge_factor", range(11, 17))
-def test_text_wraps(fudge_factor):
-    space_width = 4  # tkinter.font.Font().measure(" ")
-    spaces_to_end_of_line = (800 - ORIGIN[0] - fudge_factor) // space_width
-    layout = chapter2.layout(" " * spaces_to_end_of_line + "C")
+def test_text_wraps():
+    characters_to_fill_line = (800 - ORIGIN[0]) // HSTEP
+    layout = chapter2.layout("A" * characters_to_fill_line + " " + "C")
     assert layout[-1] == ((ORIGIN[0], ORIGIN[1] + LINE_HEIGHT), 'C')
 
 
