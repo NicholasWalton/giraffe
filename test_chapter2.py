@@ -48,11 +48,11 @@ def test_tk_browser(sample_url):
 def test_text_marches():
     layout = chapter2.layout("A B")
     assert layout[0] == (ORIGIN, 'A')
-    assert layout[1] == ((ORIGIN[0] + HSTEP, ORIGIN[1]), 'B')
+    assert layout[1] == ((ORIGIN[0] + 2 * HSTEP, ORIGIN[1]), 'B')
 
 
 def test_text_wraps():
-    characters_to_fill_line = (800 - ORIGIN[0]) // HSTEP
+    characters_to_fill_line = (800 - ORIGIN[0]) // HSTEP - 1
     layout = chapter2.layout("A" * characters_to_fill_line + " " + "C")
     assert layout[-1] == ((ORIGIN[0], ORIGIN[1] + LINE_HEIGHT), 'C')
 
@@ -103,11 +103,11 @@ def test_newline():
 
 
 def test_resize(browser):
-    assert browser.display_list[1] == ((ORIGIN[0] + HSTEP, ORIGIN[1]), 'B')
+    assert browser.display_list[1] == ((ORIGIN[0] + 2 * HSTEP, ORIGIN[1]), 'B')
 
     class MockEvent:
         def __init__(self):
-            self.width = HSTEP  # one character wide
+            self.width = 3 * HSTEP  # one character wide plus margins
             self.height = 400
 
     browser.resize(MockEvent())

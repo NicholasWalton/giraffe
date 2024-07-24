@@ -116,17 +116,16 @@ class Browser(HeadlessBrowser):
 def layout(text, font=FakeFont(), width=WIDTH):
     display_list = []
     cursor_x, cursor_y = HSTEP, VSTEP
-    for word in text.split(' '):
-        while word.startswith('\n'):
-            word = word.removeprefix('\n')
-            cursor_y += 1.5 * VSTEP
-            cursor_x = HSTEP
-        display_list.append(((cursor_x, cursor_y), word))
-        w = font.measure(word)
-        cursor_x += w
-        if cursor_x + w >= width - HSTEP:
-            cursor_y += font.metrics("linespace") * 1.25
-            cursor_x = HSTEP
+    for line in text.split('\n'):
+        for word in line.split():
+            w = font.measure(word)
+            if cursor_x + w > width - HSTEP:
+                cursor_y += 1.25 * font.metrics("linespace")
+                cursor_x = HSTEP
+            display_list.append(((cursor_x, cursor_y), word))
+            cursor_x += w + font.measure(" ")
+        cursor_y += 1.5 * font.metrics("linespace")
+        cursor_x = HSTEP
     return display_list
 
 
