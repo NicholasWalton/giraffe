@@ -116,7 +116,8 @@ class Browser(HeadlessBrowser):
 
     @override
     def create_text(self, x, y, word):
-        self.canvas.create_text(x, y, text=word, font=self.fonts(), anchor='nw', tag=word)
+        escaped = word.replace('"','\\"')
+        self.canvas.create_text(x, y, text=word, font=self.fonts(), anchor='nw', tag=f'"{escaped}"')
 
 
 class Layout(list):
