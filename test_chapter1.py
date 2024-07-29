@@ -36,7 +36,7 @@ def test_url_path():
 def test_build_request(example_url):
     expected_request = "\r\n".join(
         (
-            "GET /index.html HTTP/1.1",
+            "GET /index.html HTTP/1.0",
             "Host: example.org",
             "User-Agent: giraffe",
             "\r\n",
