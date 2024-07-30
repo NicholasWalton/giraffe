@@ -141,6 +141,10 @@ def test_entities_in_html():
     url = URL("data:text/html,<http>hello &lt;&unknown;&gt;</http>")
     assert url.load() == [Tag("http"), Text("hello <&unknown;>"), Tag("/http")]
 
+def test_long_tag():
+    url = URL('data:text/html,<img height="1" width="1" style="display:none" alt="fbpx" src="https://www.facebook.com/tr?id=1218016184890789&ev=PageView&noscript=1"/>')
+    actual, = url.load()
+    assert isinstance(actual, Tag)
 
 def test_view_source():
     url = URL("view-source:" + chapter1.DEFAULT_PAGE)
