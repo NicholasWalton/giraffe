@@ -15,7 +15,7 @@ HMARGIN, VMARGIN = 13, 18
 
 
 def main():
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(level=logging.INFO)
     import sys
     browser = Browser()
     if len(sys.argv) > 1:
@@ -61,6 +61,7 @@ class HeadlessBrowser:
         frame_start = time.perf_counter()
         for (x, y), word, _ in self.display_list:
             if not self._is_offscreen(y):
+                logging.debug(f"Drawing [{word}] at {x},{y}")
                 self.create_text(x, y - self.scroll, word)
                 words += 1
         frame_end = time.perf_counter()
