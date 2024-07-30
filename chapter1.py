@@ -203,6 +203,8 @@ class HtmlLexer:
                 in_tag = False
                 self.tokens.append(Tag(buffer))
                 buffer = ""
+            elif in_tag:
+                buffer += c
             else:
                 buffer += self._process_character_outside_tag(c)
         if self.entity:
