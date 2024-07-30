@@ -228,10 +228,15 @@ class HtmlLexer:
 
 
 def parse_entity(entity):
-    if entity == "&lt;":
-        return "<"
-    elif entity == "&gt;":
-        return ">"
+    match entity:
+        case "&lt;":
+            return "<"
+        case "&gt;":
+            return ">"
+        case "&amp;":
+            return "&"
+        case "&times;":
+            return "×"
     return entity
 
 
