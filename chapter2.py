@@ -126,9 +126,20 @@ class Layout(list):
         self.fonts = fonts
         self.width = width
         self.weight = NORMAL
+        self.in_script = False
+        self.in_style = False
         for token in tokens:
             if isinstance(token, Text):
-                self._layout_text(token.text)
+                if not self.in_script and not self.in_style:
+                    self._layout_text(token.text)
+            elif "/script" in token.tag:
+                self.in_script = False
+            elif token.tag.startswith("script"):
+                self.in_script = True
+            elif "/style" in token.tag:
+                self.in_style = False
+            elif token.tag.startswith("style"):
+                self.in_style = True
             elif token.tag == "b":
                 self.weight = "bold"
             elif token.tag == "/b":
