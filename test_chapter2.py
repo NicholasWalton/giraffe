@@ -103,8 +103,8 @@ def test_skip_offscreen(browser):
 
 
 def test_newline():
-    layout = chapter2.Layout([Text("\nC")])
-    assert_text_location(layout[0], (ORIGIN[0], ORIGIN[1] + 1.5 * VSTEP), 'C')
+    layout = chapter2.Layout([Text("A"), Tag("br"), Text("\n\nC")])
+    assert_text_location(layout[1], (ORIGIN[0], ORIGIN[1] + 1.5 * VSTEP), 'C')
 
 
 def test_resize(browser):

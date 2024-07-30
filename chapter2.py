@@ -140,17 +140,18 @@ class Layout(list):
                 self.in_style = False
             elif token.tag.startswith("style"):
                 self.in_style = True
+            elif token.tag in ("br","/p","/li","/div"):
+                if self.cursor_x != HMARGIN:
+                    self.cursor_x = HMARGIN
+                    self.cursor_y += 1.5 * self._font().metrics("linespace")
             elif token.tag == "b":
                 self.weight = "bold"
             elif token.tag == "/b":
                 self.weight = NORMAL
 
     def _layout_text(self, text):
-        for line in text.split('\n'):
-            for word in line.split():
-                self._layout_word(word)
-            self.cursor_y += 1.5 * self._font().metrics("linespace")
-            self.cursor_x = HMARGIN
+        for word in text.split():
+            self._layout_word(word)
 
     def _layout_word(self, word):
         w = self._font().measure(word)
