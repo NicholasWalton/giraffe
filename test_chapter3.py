@@ -1,12 +1,12 @@
 import tkinter
 
-import chapter2
-from chapter1 import Text, Tag
+from giraffe.url import Text, Tag
 from conftest import SCROLL_AMOUNT, ORIGIN
+from giraffe.browser import Browser, Layout, FakeFont
 
 
 def test_tk_browser(sample_url):
-    browser = chapter2.Browser()
+    browser = Browser()
     browser.load(sample_url)
 
     ## text_displayed
@@ -33,21 +33,21 @@ def test_tk_browser(sample_url):
 
 
 def test_layout_bold():
-    layout = chapter2.Layout([Tag("b"), Text("bolded"), Tag("/b"), Text("normal")])
+    layout = Layout([Tag("b"), Text("bolded"), Tag("/b"), Text("normal")])
     _, text, font = layout[0]
-    assert font == chapter2.FakeFont(weight="bold")
+    assert font == FakeFont(weight="bold")
     _, text, font = layout[1]
-    assert font == chapter2.FakeFont(weight="normal")
+    assert font == FakeFont(weight="normal")
 
 
 def test_layout_italic():
-    layout = chapter2.Layout([Tag("i"), Text("italic"), Tag("/i"), Text("normal")])
+    layout = Layout([Tag("i"), Text("italic"), Tag("/i"), Text("normal")])
     _, text, font = layout[0]
-    assert font == chapter2.FakeFont(slant="italic")
+    assert font == FakeFont(slant="italic")
     _, text, font = layout[1]
-    assert font == chapter2.FakeFont()
+    assert font == FakeFont()
 
 
 def test_end_tag_in_attribute():
-    layout = chapter2.Layout([Tag("style"), Tag('a href="/style"'), Text("css"), Tag("/style")])
+    layout = Layout([Tag("style"), Tag('a href="/style"'), Text("css"), Tag("/style")])
     assert len(layout) == 0

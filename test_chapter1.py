@@ -3,8 +3,8 @@ from io import BytesIO
 
 import pytest
 
-import chapter1
-from chapter1 import URL, parse_entity, TooManyRedirects, Tag, Text
+import giraffe
+from giraffe.url import URL, parse_entity, TooManyRedirects, Tag, Text
 
 EMPTY_HTML = "<!doctype html>\r\n<html>\r\n</html>\r\n"
 EXAMPLE_URL = "http://example.org/index.html"
@@ -117,11 +117,11 @@ def test_file_scheme_osx():
 
 
 def test_default_page():
-    url = URL(chapter1.DEFAULT_PAGE)
+    url = URL(giraffe.url.DEFAULT_PAGE)
     body = url.request()
     assert body == pathlib.Path("./example1-simple.html").read_text()
     assert (
-            chapter1.strip_tags(url.load()).strip()
+            giraffe.url.strip_tags(url.load()).strip()
             == "This is a simple\n    web page with some\n    text in it."
     )
 
@@ -150,7 +150,7 @@ def test_long_tag():
 
 
 def test_view_source():
-    url = URL("view-source:" + chapter1.DEFAULT_PAGE)
+    url = URL("view-source:" + giraffe.url.DEFAULT_PAGE)
     assert url.load() == [Text(pathlib.Path("./example1-simple.html").read_text())]
 
 
@@ -182,7 +182,7 @@ def test_redirect(example_url):
 
     assert example_url._redirect(fake_response)
     assert example_url.path == expected_path
-    assert example_url.scheme == chapter1.Scheme.file
+    assert example_url.scheme == giraffe.url.Scheme.file
     assert example_url._redirect_count == 1
 
 

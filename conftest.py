@@ -1,7 +1,7 @@
 import pytest
 
-import chapter2
-from chapter1 import URL
+import giraffe
+from giraffe.url import URL
 
 SCROLL_AMOUNT = 10
 ORIGIN = (13, 18)
@@ -14,6 +14,6 @@ def sample_url():
 
 @pytest.fixture
 def browser(sample_url):
-    browser = chapter2.HeadlessBrowser()
+    browser = giraffe.browser.HeadlessBrowser()
     browser.load(sample_url)
     return browser

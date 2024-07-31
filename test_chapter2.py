@@ -1,6 +1,7 @@
-import chapter2
-from chapter1 import Text, Tag
+import giraffe.browser
 from conftest import ORIGIN, SCROLL_AMOUNT
+from giraffe.url import Text, Tag
+from giraffe.browser import Layout
 
 HSTEP, VSTEP = 17, 23
 LINE_HEIGHT = 1.25 * VSTEP
@@ -12,14 +13,14 @@ def assert_text_location(entry, expected_location, expected_text):
 
 
 def test_text_marches():
-    layout = chapter2.Layout([Text("A B")])
+    layout = Layout([Text("A B")])
     assert_text_location(layout[0], ORIGIN, 'A')
     assert_text_location(layout[1], (ORIGIN[0] + 2 * HSTEP, ORIGIN[1]), 'B')
 
 
 def test_text_wraps():
     characters_to_fill_line = (800 - ORIGIN[0]) // HSTEP - 1
-    layout = chapter2.Layout([Text("A" * characters_to_fill_line + " " + "C")])
+    layout = Layout([Text("A" * characters_to_fill_line + " " + "C")])
     assert_text_location(layout[-1], (ORIGIN[0], ORIGIN[1] + LINE_HEIGHT), 'C')
 
 
@@ -55,16 +56,16 @@ def test_scroll_off_top(browser):
 
 
 def test_skip_offscreen(browser):
-    scroll = chapter2.VMARGIN + 1
+    scroll = giraffe.browser.VMARGIN + 1
     browser.scroll = scroll
     assert browser._is_offscreen(0)
     assert not browser._is_offscreen(1)  # only bottom pixel will be visible
-    assert not browser._is_offscreen(chapter2.HEIGHT + scroll)  # only top pixel will be visible
-    assert browser._is_offscreen(chapter2.HEIGHT + scroll + 1)
+    assert not browser._is_offscreen(giraffe.browser.HEIGHT + scroll)  # only top pixel will be visible
+    assert browser._is_offscreen(giraffe.browser.HEIGHT + scroll + 1)
 
 
 def test_newline():
-    layout = chapter2.Layout([Text("A"), Tag("br"), Text("\n\nC")])
+    layout = Layout([Text("A"), Tag("br"), Text("\n\nC")])
     assert_text_location(layout[1], (ORIGIN[0], ORIGIN[1] + 1.5 * VSTEP), 'C')
 
 

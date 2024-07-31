@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from tkinter import BOTH
 from typing import override
 
-from chapter1 import URL, Text
+from giraffe.url import URL, Text
 
 NORMAL = "normal"
 ROMAN = "roman"
