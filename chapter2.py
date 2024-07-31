@@ -59,17 +59,17 @@ class HeadlessBrowser:
     def draw(self):
         words = 0
         frame_start = time.perf_counter()
-        for (x, y), word, _ in self.display_list:
+        for (x, y), word, font in self.display_list:
             if not self._is_offscreen(y):
                 logging.debug(f"Drawing [{word}] at {x},{y}")
-                self.create_text(x, y - self.scroll, word)
+                self.create_text(x, y - self.scroll, word, font)
                 words += 1
         frame_end = time.perf_counter()
         frame_ms = (frame_end - frame_start) * 1000
         logging.info(f"Drew {words} words in {frame_ms:.1f} ms")
 
-    def create_text(self, x, y, word):
-        logging.debug(f"Pretending to draw [{word}] at {x},{y}")
+    def create_text(self, x, y, word, font):
+        logging.debug(f"Pretending to draw [{word}] in {font} at {x},{y}")
 
     def _should_draw(self, y):
         return not self._is_offscreen(y)
@@ -115,9 +115,9 @@ class Browser(HeadlessBrowser):
         super().draw()
 
     @override
-    def create_text(self, x, y, word):
-        escaped = word.replace('"','\\"')
-        self.canvas.create_text(x, y, text=word, font=self.fonts(), anchor='nw', tag=f'"{escaped}"')
+    def create_text(self, x, y, word, font):
+        escaped = word.replace('"', '\\"')
+        self.canvas.create_text(x, y, text=word, font=font, anchor='nw', tag=f'"{escaped}"')
 
 
 class Layout(list):

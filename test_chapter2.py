@@ -1,3 +1,5 @@
+import tkinter
+
 import pytest
 
 import chapter2
@@ -11,7 +13,7 @@ LINE_HEIGHT = 1.25 * VSTEP
 
 @pytest.fixture
 def sample_url():
-    return URL("data:text/html,A B")
+    return URL("data:text/html,A B <b>bold</b>")
 
 
 @pytest.fixture
@@ -33,6 +35,9 @@ def test_tk_browser(sample_url):
     ## text_displayed
     assert browser.window.children == {'!canvas': browser.canvas}
     assert browser.canvas.itemcget('A', 'text') == 'A'
+    actual_font_name = browser.canvas.itemcget('bold', 'font')
+    actual_font = tkinter.font.Font(name=actual_font_name, exists=True)
+    assert actual_font.cget("weight") == "bold"
 
     ## bindings
     assert "scroll_down" in browser.window.bind('<Down>')  # Not ideal but Tkinter is not test-friendly
@@ -119,6 +124,7 @@ def test_resize(browser):
     browser.resize(MockEvent())
     assert_text_location(browser.display_list[1], (ORIGIN[0], ORIGIN[1] + LINE_HEIGHT), expected_text)
     assert browser.height == 400
+
 
 def test_layout_bold():
     layout = chapter2.Layout([Tag("b"), Text("bolded"), Tag("/b"), Text("normal")])
