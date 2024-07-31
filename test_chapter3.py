@@ -1,8 +1,8 @@
 import tkinter
 
-from giraffe.url import Text, Tag
 from conftest import SCROLL_AMOUNT, ORIGIN
 from giraffe.browser import Browser, Layout, FakeFont
+from giraffe.url import Text, Tag
 
 
 def test_tk_browser(sample_url):
@@ -51,3 +51,16 @@ def test_layout_italic():
 def test_end_tag_in_attribute():
     layout = Layout([Tag("style"), Tag('a href="/style"'), Text("css"), Tag("/style")])
     assert len(layout) == 0
+
+
+def test_layout_size():
+    layout = Layout([Tag("big"), Text("once"), Tag("big"), Text("twice"), Tag("/big"), Tag("/big"), Text("normal")])
+    _, text, font = layout[0]
+    assert text == "once"
+    assert font == FakeFont(size=16)
+    _, text, font = layout[1]
+    assert text == "twice"
+    assert font == FakeFont(size=20)
+    _, text, font = layout[2]
+    assert text == "normal"
+    assert font == FakeFont(size=12)

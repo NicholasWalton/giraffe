@@ -33,6 +33,7 @@ class FakeFont:
     HSTEP, VSTEP = 17, 23
     weight: str = NORMAL
     slant: str = ROMAN
+    size: int = 12
 
     @staticmethod
     def metrics(name):
@@ -130,6 +131,7 @@ class Layout(list):
         self.width = width
         self.weight = NORMAL
         self.style = ROMAN
+        self.size = 12
         self.in_script = False
         self.in_style = False
         for token in tokens:
@@ -161,6 +163,10 @@ class Layout(list):
             self.style = "italic"
         elif tag == "/i":
             self.style = ROMAN
+        elif tag == "big":
+            self.size += 4
+        elif tag == "/big":
+            self.size -= 4
 
     def _layout_text(self, text):
         for word in text.split():
@@ -175,7 +181,7 @@ class Layout(list):
         self.cursor_x += w + self._font().measure(" ")
 
     def _font(self):
-        return self.fonts(weight=self.weight, slant=self.style)
+        return self.fonts(weight=self.weight, slant=self.style, size=self.size)
 
 
 if __name__ == '__main__':
