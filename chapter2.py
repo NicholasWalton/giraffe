@@ -135,26 +135,30 @@ class Layout(list):
             if isinstance(token, Text):
                 if not self.in_script and not self.in_style:
                     self._layout_text(token.text)
-            elif "/script" in token.tag:
-                self.in_script = False
-            elif token.tag.startswith("script"):
-                self.in_script = True
-            elif "/style" in token.tag:
-                self.in_style = False
-            elif token.tag.startswith("style"):
-                self.in_style = True
-            elif token.tag in ("br","/p","/li","/div"):
-                if self.cursor_x != HMARGIN:
-                    self.cursor_x = HMARGIN
-                    self.cursor_y += 1.5 * self._font().metrics("linespace")
-            elif token.tag == "b":
-                self.weight = "bold"
-            elif token.tag == "/b":
-                self.weight = NORMAL
-            elif token.tag == "i":
-                self.style = "italic"
-            elif token.tag == "/i":
-                self.style = ROMAN
+            else:
+                self._handle_tag(token.tag)
+
+    def _handle_tag(self, tag):
+        if "/script" in tag:
+            self.in_script = False
+        elif tag.startswith("script"):
+            self.in_script = True
+        elif "/style" in tag:
+            self.in_style = False
+        elif tag.startswith("style"):
+            self.in_style = True
+        elif tag in ("br", "/p", "/li", "/div"):
+            if self.cursor_x != HMARGIN:
+                self.cursor_x = HMARGIN
+                self.cursor_y += 1.5 * self._font().metrics("linespace")
+        elif tag == "b":
+            self.weight = "bold"
+        elif tag == "/b":
+            self.weight = NORMAL
+        elif tag == "i":
+            self.style = "italic"
+        elif tag == "/i":
+            self.style = ROMAN
 
     def _layout_text(self, text):
         for word in text.split():
