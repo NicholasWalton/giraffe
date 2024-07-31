@@ -132,3 +132,11 @@ def test_layout_bold():
     assert font == chapter2.FakeFont(weight="bold")
     _, text, font = layout[1]
     assert font == chapter2.FakeFont(weight="normal")
+
+
+def test_layout_italic():
+    layout = chapter2.Layout([Tag("i"), Text("italic"), Tag("/i"), Text("normal")])
+    _, text, font = layout[0]
+    assert font == chapter2.FakeFont(slant="italic")
+    _, text, font = layout[1]
+    assert font == chapter2.FakeFont()

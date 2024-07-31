@@ -9,6 +9,7 @@ from typing import override
 from chapter1 import URL, Text
 
 NORMAL = "normal"
+ROMAN = "roman"
 
 WIDTH, HEIGHT = 800, 600
 HMARGIN, VMARGIN = 13, 18
@@ -30,7 +31,8 @@ def main():
 @dataclass
 class FakeFont:
     HSTEP, VSTEP = 17, 23
-    weight: str = "normal"
+    weight: str = NORMAL
+    slant: str = ROMAN
     @staticmethod
     def metrics(name):
         match name:
@@ -126,6 +128,7 @@ class Layout(list):
         self.fonts = fonts
         self.width = width
         self.weight = NORMAL
+        self.style = ROMAN
         self.in_script = False
         self.in_style = False
         for token in tokens:
@@ -148,6 +151,10 @@ class Layout(list):
                 self.weight = "bold"
             elif token.tag == "/b":
                 self.weight = NORMAL
+            elif token.tag == "i":
+                self.style = "italic"
+            elif token.tag == "/i":
+                self.style = ROMAN
 
     def _layout_text(self, text):
         for word in text.split():
@@ -162,7 +169,7 @@ class Layout(list):
         self.cursor_x += w + self._font().measure(" ")
     
     def _font(self):
-        return self.fonts(weight = self.weight)
+        return self.fonts(weight = self.weight, slant = self.style)
 
 
 if __name__ == '__main__':
