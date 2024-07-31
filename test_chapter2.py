@@ -140,3 +140,8 @@ def test_layout_italic():
     assert font == chapter2.FakeFont(slant="italic")
     _, text, font = layout[1]
     assert font == chapter2.FakeFont()
+
+
+def test_end_tag_in_attribute():
+    layout = chapter2.Layout([Tag("style"), Tag('a href="/style"'), Text("css"), Tag("/style")])
+    assert len(layout) == 0

@@ -139,6 +139,7 @@ class Layout(list):
                 self._handle_tag(token.tag)
 
     def _handle_tag(self, tag):
+        tag = tag.split()[0] # discard attributes
         if "/script" in tag:
             self.in_script = False
         elif tag.startswith("script"):
