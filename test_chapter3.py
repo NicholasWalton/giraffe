@@ -1,5 +1,7 @@
 import tkinter
 
+import pytest
+
 from conftest import SCROLL_AMOUNT, ORIGIN
 from giraffe.browser import Browser, Layout, FakeFont
 from giraffe.url import Text, Tag
@@ -53,14 +55,17 @@ def test_end_tag_in_attribute():
     assert len(layout) == 0
 
 
-def test_layout_size():
+@pytest.mark.parametrize("tag,size0,size1", (
+        ("big", 16, 20),
+))
+def test_layout_size(tag, size0, size1):
     layout = Layout([Tag("big"), Text("once"), Tag("big"), Text("twice"), Tag("/big"), Tag("/big"), Text("normal")])
     _, text, font = layout[0]
     assert text == "once"
-    assert font == FakeFont(size=16)
+    assert font == FakeFont(size=size0)
     _, text, font = layout[1]
     assert text == "twice"
-    assert font == FakeFont(size=20)
+    assert font == FakeFont(size=size1)
     _, text, font = layout[2]
     assert text == "normal"
     assert font == FakeFont(size=12)
