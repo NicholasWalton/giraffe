@@ -13,6 +13,7 @@ DEFAULT_PAGE = "file://./example1-simple.html"
 
 _sockets = {}
 
+
 class Scheme(StrEnum):
     http = auto()
     https = auto()
@@ -23,6 +24,7 @@ class Scheme(StrEnum):
 @dataclass
 class Text:
     text: str
+
 
 @dataclass
 class Tag:

@@ -33,6 +33,7 @@ class FakeFont:
     HSTEP, VSTEP = 17, 23
     weight: str = NORMAL
     slant: str = ROMAN
+
     @staticmethod
     def metrics(name):
         match name:
@@ -139,7 +140,7 @@ class Layout(list):
                 self._handle_tag(token.tag)
 
     def _handle_tag(self, tag):
-        tag = tag.split()[0] # discard attributes
+        tag = tag.split()[0]  # discard attributes
         if "/script" in tag:
             self.in_script = False
         elif tag.startswith("script"):
@@ -172,9 +173,9 @@ class Layout(list):
             self.cursor_x = HMARGIN
         self.append(((self.cursor_x, self.cursor_y), word, self._font()))
         self.cursor_x += w + self._font().measure(" ")
-    
+
     def _font(self):
-        return self.fonts(weight = self.weight, slant = self.style)
+        return self.fonts(weight=self.weight, slant=self.style)
 
 
 if __name__ == '__main__':
