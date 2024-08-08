@@ -70,3 +70,12 @@ def test_layout_size(tag, size0, size1):
     _, text, font = layout[2]
     assert text == "normal"
     assert font == FakeFont(size=12)
+
+def test_shared_baseline():
+    layout = Layout([Text("normal"), Tag("big"), Text("big")])
+    (normal_x, normal_y), normal_text, normal_font = layout[0]
+    (big_x, big_y), big_text, big_font = layout[1]
+    assert normal_text == "normal"
+    assert big_text == "big"
+    assert normal_y > big_y
+    

@@ -136,12 +136,14 @@ class Layout(list):
         self.size = 12
         self.in_script = False
         self.in_style = False
+        self.line = []
         for token in tokens:
             if isinstance(token, Text):
                 if not self.in_script and not self.in_style:
                     self._layout_text(token.text)
             else:
                 self._handle_tag(token.tag)
+        self.flush()
 
     def _handle_tag(self, tag):
         tag = tag.split()[0]  # discard attributes
@@ -153,10 +155,11 @@ class Layout(list):
             self.in_style = False
         elif tag.startswith("style"):
             self.in_style = True
-        elif tag in ("br", "/p", "/li", "/div"):
-            if self.cursor_x != HMARGIN:
-                self.cursor_x = HMARGIN
-                self.cursor_y += 1.5 * self._font().metrics("linespace")
+        elif tag == "/p":
+            self.flush()
+            self.cursor_y += 1.5 * self._font().metrics("linespace")
+        elif tag in ("br", "/li", "/div"):
+            self.flush()
         elif tag == "b":
             self.weight = "bold"
         elif tag == "/b":
@@ -179,12 +182,25 @@ class Layout(list):
             self.word(word)
 
     def word(self, word):
-        w = self._font().measure(word)
+        font = self._font()
+        w = font.measure(word)
         if self.cursor_x + w > self.width - HMARGIN:
-            self.cursor_y += 1.25 * self._font().metrics("linespace")
-            self.cursor_x = HMARGIN
-        self.append(((self.cursor_x, self.cursor_y), word, self._font()))
+            self.flush()
+        self.line.append((self.cursor_x, word, font))
         self.cursor_x += w + self._font().measure(" ")
+
+    def flush(self):
+        if not self.line: return
+        metrics = [font.metrics() for x, word, font in self.line]
+        max_ascent = max([metric["ascent"] for metric in metrics])
+        baseline = self.cursor_y + 1.25 * max_ascent
+        for x, word, font in self.line:
+            y = baseline - font.metrics("ascent")
+            self.append(((x, y), word, font))
+        max_descent = max([metric["descent"] for metric in metrics])
+        self.cursor_y = baseline + 1.25 * max_descent
+        self.cursor_x = HMARGIN
+        self.line = []
 
     def _font(self):
         return self.fonts(weight=self.weight, slant=self.style, size=self.size)
