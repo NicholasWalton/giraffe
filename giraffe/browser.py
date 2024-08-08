@@ -35,13 +35,15 @@ class FakeFont:
     slant: str = ROMAN
     size: int = 12
 
-    @staticmethod
-    def metrics(name):
-        match name:
-            case "linespace":
-                return FakeFont.VSTEP
-            case _:
-                raise ValueError()
+    def metrics(self, name=None):
+        metrics = {
+            "linespace": FakeFont.VSTEP,
+            "ascent": self.size / 3,
+            "descent": self.size / 4,
+        }
+        if name:
+            return metrics[name]
+        return metrics
 
     @staticmethod
     def measure(word):
