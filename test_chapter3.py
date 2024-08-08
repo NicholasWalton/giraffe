@@ -57,9 +57,10 @@ def test_end_tag_in_attribute():
 
 @pytest.mark.parametrize("tag,size0,size1", (
         ("big", 16, 20),
+        ("small", 10, 8),
 ))
 def test_layout_size(tag, size0, size1):
-    layout = Layout([Tag("big"), Text("once"), Tag("big"), Text("twice"), Tag("/big"), Tag("/big"), Text("normal")])
+    layout = Layout([Tag(tag), Text("once"), Tag(tag), Text("twice"), Tag(f"/{tag}"), Tag(f"/{tag}"), Text("normal")])
     _, text, font = layout[0]
     assert text == "once"
     assert font == FakeFont(size=size0)

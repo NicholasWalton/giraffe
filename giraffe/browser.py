@@ -167,6 +167,10 @@ class Layout(list):
             self.size += 4
         elif tag == "/big":
             self.size -= 4
+        elif tag == "small":
+            self.size -= 2
+        elif tag == "/small":
+            self.size += 2
 
     def _layout_text(self, text):
         for word in text.split():
