@@ -174,9 +174,9 @@ class Layout(list):
 
     def _layout_text(self, text):
         for word in text.split():
-            self._layout_word(word)
+            self.word(word)
 
-    def _layout_word(self, word):
+    def word(self, word):
         w = self._font().measure(word)
         if self.cursor_x + w > self.width - HMARGIN:
             self.cursor_y += 1.25 * self._font().metrics("linespace")
