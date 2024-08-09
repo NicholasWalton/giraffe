@@ -26,9 +26,11 @@ def test_tk_browser(sample_url):
 
     ## scrolled
     assert browser.scroll == 0
+    browser.draw()
+    _, original_y = browser.canvas.coords('A')
     browser.scroll = SCROLL_AMOUNT
     browser.draw()
-    assert browser.canvas.coords('A') == [ORIGIN[0], ORIGIN[1] - SCROLL_AMOUNT]
+    assert browser.canvas.coords('A') == [ORIGIN[0], original_y - SCROLL_AMOUNT]
 
     # while browser.window.dooneevent(ALL_EVENTS | DONT_WAIT):
     #     print('.')
